@@ -9,18 +9,21 @@ public class RecentServiceDTO {
     private String token;
     private String civilId;
     private String serviceName;
-    private Long timeTakenInSeconds;
+    private Long timeTakenInMinutes; // changed to minutes
 
     public static RecentServiceDTO fromEntity(String token, String civilId, String serviceName, LocalDateTime startAt, LocalDateTime endAt) {
         RecentServiceDTO dto = new RecentServiceDTO();
         dto.setToken(token);
         dto.setCivilId(civilId);
         dto.setServiceName(serviceName);
+
         if (startAt != null && endAt != null) {
-            dto.setTimeTakenInSeconds(java.time.Duration.between(startAt, endAt).getSeconds());
+            // calculate duration in minutes
+            dto.setTimeTakenInMinutes(java.time.Duration.between(startAt, endAt).toMinutes());
         } else {
-            dto.setTimeTakenInSeconds(null);
+            dto.setTimeTakenInMinutes(null);
         }
+
         return dto;
     }
 }

@@ -45,4 +45,13 @@ public class AgentController {
         List<RecentServiceDTO> recentServices = tokenService.getRecentServices();
         return ResponseEntity.ok(recentServices);
     }
+
+    @PostMapping("/recall")
+    public ResponseEntity<AgentCallResponse> recallToken(
+            @RequestParam String tokenId,
+            @RequestParam String counterId
+    ) {
+        AgentCallResponse response = tokenService.recallToken(tokenId);
+        return ResponseEntity.ok(response);
+    }
 }

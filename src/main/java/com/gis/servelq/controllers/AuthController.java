@@ -25,6 +25,7 @@ public class AuthController {
         response.setEmail(user.getEmail());
         response.setRole(user.getRole());
         response.setBranchId(user.getBranchId());
+        response.setCounterId(user.getCounterId());
         return response;
     }
 
@@ -43,6 +44,7 @@ public class AuthController {
         response.setEmail(user.getEmail());
         response.setRole(user.getRole());
         response.setBranchId(user.getBranchId());
+        response.setCounterId(user.getCounterId());
         return response;
     }
 }

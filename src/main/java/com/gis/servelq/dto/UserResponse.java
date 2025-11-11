@@ -10,4 +10,5 @@ public class UserResponse {
     private String email;
     private UserRole role;
     private String branchId;
+    private String counterId;
 }

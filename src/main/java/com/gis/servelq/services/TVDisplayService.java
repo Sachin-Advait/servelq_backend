@@ -27,13 +27,13 @@ public class TVDisplayService {
                 .stream().limit(4).toList();
 
         // Get currently serving tokens
-        List<Token> nowServing = tokenRepository.findByCounterIdAndStatusOrderByPriorityAscCreatedAtAsc(
+        List<Token> nowServing = tokenRepository.findByBranchIdAndStatusOrderByPriorityAscCreatedAtAsc(
                 branchId, TokenStatus.SERVING);
 
         // Get upcoming tokens (first 10)
         List<Token> upcoming = tokenRepository.findByBranchIdAndStatusOrderByPriorityAscCreatedAtAsc(
                         branchId, TokenStatus.WAITING)
-                .stream().limit(10).collect(Collectors.toList());
+                .stream().limit(10).toList();
 
         TVDisplayResponse response = new TVDisplayResponse();
 

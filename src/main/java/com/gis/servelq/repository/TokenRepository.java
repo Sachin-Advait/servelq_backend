@@ -35,12 +35,14 @@ public interface TokenRepository extends JpaRepository<Token, String> {
 
     Optional<Token> findFirstByServiceIdAndStatusOrderByPriorityAscCreatedAtAsc(String serviceId, TokenStatus status);
 
-    @Query("SELECT MAX(CAST(SUBSTRING(t.token, LENGTH(:prefix) + 1) AS integer)) FROM Token t " +
-            "WHERE t.branchId = :branchId AND t.serviceId = :serviceId " +
-            "AND t.token LIKE CONCAT(:prefix, '%')")
-    Optional<Integer> findLastTokenNumber(@Param("branchId") String branchId,
-                                          @Param("serviceId") String serviceId,
-                                          @Param("prefix") String prefix);
+    @Query("""
+    SELECT MAX(CAST(t.token AS integer))
+    FROM Token t
+    WHERE t.branchId = :branchId
+""")
+    Optional<Integer> findLastTokenNumber(@Param("branchId") String branchId);
+
+
 
     long countByServiceIdAndStatus(String serviceId, TokenStatus status);
 }

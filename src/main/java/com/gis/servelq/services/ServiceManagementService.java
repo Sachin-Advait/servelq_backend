@@ -3,6 +3,7 @@ package com.gis.servelq.services;
 import com.gis.servelq.dto.ServiceRequest;
 import com.gis.servelq.dto.ServiceResponseDTO;
 import com.gis.servelq.models.ServiceModel;
+import com.gis.servelq.repository.BranchRepository;
 import com.gis.servelq.repository.ServiceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ServiceManagementService {
     private final ServiceRepository serviceRepository;
+    private final BranchRepository branchRepository;
 
     public ServiceModel createService(ServiceRequest request) {
         // Check if service code already exists in this branch
@@ -21,6 +23,15 @@ public class ServiceManagementService {
                 .ifPresent(s -> {
                     throw new RuntimeException("Service code already exists in this branch");
                 });
+
+        if (request.getParentId() != null) {
+            serviceRepository.findById(request.getParentId())
+                    .orElseThrow(() -> new RuntimeException("Parent service does not exist"));
+        }
+
+        branchRepository.findById(request.getBranchId())
+                .orElseThrow(() -> new RuntimeException("Branch does not exist"));
+
 
         ServiceModel serviceModel = new ServiceModel();
         serviceModel.setCode(request.getCode());

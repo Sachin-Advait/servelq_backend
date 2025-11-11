@@ -30,7 +30,7 @@ public class TokenService {
                 .orElseThrow(() -> new RuntimeException("Branch not found"));
 
         // Generate token number
-        String tokenNumber = generateTokenNumber(branch, serviceModel);
+        String tokenNumber = generateTokenNumber(branch);
 
         // Create token
         Token token = new Token();
@@ -75,19 +75,12 @@ public class TokenService {
                 .orElseThrow(() -> new RuntimeException("Token not found"));
     }
 
-    private String generateTokenNumber(Branch branch, ServiceModel serviceModel) {
-        String prefix = serviceModel.getCode() + "-";
-
-        Optional<Integer> lastNumber = tokenRepository.findLastTokenNumber(
-                branch.getId(), serviceModel.getId(), prefix
-        );
-
-        // If no previous token found, start from 1000
+    private String generateTokenNumber(Branch branch) {
+        Optional<Integer> lastNumber = tokenRepository.findLastTokenNumber(branch.getId());
         int nextNumber = lastNumber.orElse(1000) + 1;
-
-        // Return without zero-padding — e.g. REG-1001, REG-1002, etc.
-        return prefix + nextNumber;
+        return String.valueOf(nextNumber);
     }
+
 
     public List<TokenDTO> getUpcomingTokensForCounter(String counterId) {
         return tokenRepository.findUpcomingTokensForCounter(counterId)
@@ -220,4 +213,33 @@ public class TokenService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
+    public AgentCallResponse recallToken(String tokenId) {
+        // Fetch the token
+        Token token = tokenRepository.findById(tokenId)
+                .orElseThrow(() -> new RuntimeException("Token not found"));
+
+        // Update token status to CALLING again
+        token.setStatus(TokenStatus.CALLING);
+        token.setCalledAt(LocalDateTime.now());
+        tokenRepository.save(token);
+
+        // Calculate waiting count for the service
+        long waitingCount = tokenRepository.countByServiceIdAndStatus(
+                token.getServiceId(), TokenStatus.WAITING
+        );
+
+        // Prepare response
+        AgentCallResponse response = new AgentCallResponse();
+        response.setTokenId(token.getId());
+        response.setToken(token.getToken());
+        response.setServiceName(token.getService().getName());
+        response.setCounterId(token.getCounter().getId());
+        response.setCounterName(token.getCounter().getName());
+        response.setCalledAt(token.getCalledAt());
+        response.setCivilId(token.getCivilId());
+        response.setWaitingCount((int) waitingCount);
+
+        return response;
+    }
 }

@@ -31,9 +31,8 @@ public class User {
     @Column(name = "branch_id")
     private String branchId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "branch_id", insertable = false, updatable = false)
-    private Branch branch;
+    @Column(name = "counter_id")
+    private String counterId;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

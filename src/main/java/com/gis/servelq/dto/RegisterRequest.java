@@ -18,5 +18,6 @@ public class RegisterRequest {
     private UserRole role = UserRole.USER;
 
     private String branchId;
+    private String counterId;
 }
 
