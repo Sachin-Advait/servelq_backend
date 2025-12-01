@@ -31,15 +31,13 @@ public class UserController {
 
     @PutMapping("/{id}")
     public ResponseEntity<User> updateUser(@PathVariable String id, @RequestBody User user) {
-        if (user.getRole().equals(UserRole.ADMIN)) {
+        System.out.println(user.getRole());
         User updatedUser = userService.updateUser(id, user);
         if (updatedUser != null) {
             return ResponseEntity.ok(updatedUser);
         }
         return ResponseEntity.notFound().build();
-        }
 
-        throw new RuntimeException("You don't have the permission to update user");
     }
 
     @DeleteMapping("/{id}")

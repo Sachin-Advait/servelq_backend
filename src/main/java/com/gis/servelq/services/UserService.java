@@ -2,6 +2,7 @@ package com.gis.servelq.services;
 
 import com.gis.servelq.dto.RegisterRequest;
 import com.gis.servelq.models.User;
+import com.gis.servelq.models.UserRole;
 import com.gis.servelq.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -45,15 +46,28 @@ public class UserService {
     }
 
     public User updateUser(String id, User userDetails) {
-        Optional<User> optionalUser = userRepository.findById(id);
-        if (optionalUser.isPresent()) {
-            User user = optionalUser.get();
-            user.setName(userDetails.getName());
-            user.setPassword(userDetails.getPassword());
-            user.setRole(userDetails.getRole());
+        return userRepository.findById(id).map(user -> {
+
+            if (userDetails.getName() != null)
+                user.setName(userDetails.getName());
+
+            if (userDetails.getEmail() != null)
+                user.setEmail(userDetails.getEmail());
+
+            if (userDetails.getPassword() != null)
+                user.setPassword(userDetails.getPassword());
+
+            if (userDetails.getRole() != null)
+                user.setRole(userDetails.getRole());
+
+            if (userDetails.getBranchId() != null)
+                user.setBranchId(userDetails.getBranchId());
+
+            if (userDetails.getCounterId() != null)
+                user.setCounterId(userDetails.getCounterId());
+
             return userRepository.save(user);
-        }
-        return null;
+        }).orElse(null);
     }
 
     public void deleteUser(String id) {
