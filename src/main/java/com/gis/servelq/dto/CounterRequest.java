@@ -17,6 +17,7 @@ public class CounterRequest {
     @NotBlank(message = "Branch ID is required")
     private String branchId;
 
+    private String userId;
     private Boolean enabled = true;
     private Boolean paused = false;
     private String status = "IDLE";

@@ -15,6 +15,8 @@ public class CounterResponse {
     private Boolean enabled;
     private Boolean paused;
     private String status;
+    private String userId;
+    private String username;
     private List<ServiceResponseDTO> services;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

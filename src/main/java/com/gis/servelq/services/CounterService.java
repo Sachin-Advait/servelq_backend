@@ -10,6 +10,7 @@ import com.gis.servelq.models.ServiceModel;
 import com.gis.servelq.repository.BranchRepository;
 import com.gis.servelq.repository.CounterRepository;
 import com.gis.servelq.repository.ServiceRepository;
+import com.gis.servelq.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +24,8 @@ public class CounterService {
     private final CounterRepository counterRepository;
     private final BranchRepository branchRepository;
     private final ServiceRepository serviceRepository;
+    private final UserRepository userRepository;
+
 
     // Convert Entity to Response DTO
     private CounterResponse convertToResponse(Counter counter) {
@@ -32,6 +35,7 @@ public class CounterService {
         response.setName(counter.getName());
         response.setEnabled(counter.getEnabled());
         response.setPaused(counter.getPaused());
+        response.setUserId(counter.getUserId());
         response.setStatus(counter.getStatus());
         response.setCreatedAt(counter.getCreatedAt());
         response.setUpdatedAt(counter.getUpdatedAt());
@@ -43,6 +47,11 @@ public class CounterService {
             response.setBranch(convertBranchToResponse(counter.getBranch()));
         }
 
+        if (counter.getUserId() != null) {
+            userRepository.findById(counter.getUserId()).ifPresent(user ->
+                    response.setUsername(user.getName())
+            );
+        }
         // Convert services to ServiceResponse list
         if (counter.getServices() != null) {
             response.setServices(counter.getServices().stream()
@@ -102,6 +111,9 @@ public class CounterService {
             List<ServiceModel> services = serviceRepository.findAllById(request.getServiceIds());
             counter.setServices(services);
         }
+        if (request.getUserId() != null) {
+            counter.setUserId(request.getUserId());
+        }
 
         Counter savedCounter = counterRepository.save(counter);
         return convertToResponse(savedCounter);
@@ -154,6 +166,9 @@ public class CounterService {
         // Update basic fields
         if (request.getCode() != null) {
             existingCounter.setCode(request.getCode());
+        }
+        if (request.getUserId() != null) {
+            existingCounter.setUserId(request.getUserId());
         }
         if (request.getName() != null) {
             existingCounter.setName(request.getName());

@@ -36,6 +36,9 @@ public class Counter {
     @NotNull
     private Boolean paused = false;
 
+    @Column(name = "user_id")
+    private String userId;
+
     private String status = "IDLE";
 
     @ManyToMany

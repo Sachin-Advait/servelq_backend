@@ -242,4 +242,61 @@ public class TokenService {
 
         return response;
     }
+
+    @Transactional
+    public Token transferToken(TokenTransferRequest request) {
+
+        Token token = tokenRepository.findById(request.getTokenId())
+                .orElseThrow(() -> new RuntimeException("Token not found"));
+
+        // Token must not be completed/cancelled
+        if (token.getStatus() == TokenStatus.DONE ||
+                token.getStatus() == TokenStatus.CANCELED ||
+                token.getStatus() == TokenStatus.NO_SHOW) {
+            throw new RuntimeException("Token cannot be transferred from status: " + token.getStatus());
+        }
+
+        // --- Transfer Branch ---
+        if (request.getToBranchId() != null &&
+                !request.getToBranchId().equals(token.getBranchId())) {
+
+            Branch branch = branchRepository.findById(request.getToBranchId())
+                    .orElseThrow(() -> new RuntimeException("Target branch not found"));
+
+            token.setBranchId(branch.getId());
+        }
+
+        // --- Transfer Service ---
+        if (request.getToServiceId() != null &&
+                !request.getToServiceId().equals(token.getServiceId())) {
+
+            ServiceModel service = serviceRepository.findById(request.getToServiceId())
+                    .orElseThrow(() -> new RuntimeException("Target service not found"));
+
+            token.setServiceId(service.getId());
+        }
+
+        // --- Transfer to Counter ---
+
+        if (request.getToCounterId() != null) {
+            Counter counter = counterRepository.findById(request.getToCounterId())
+                    .orElseThrow(() -> new RuntimeException("Target counter not found"));
+
+            token.setCounterId(counter.getId());
+        } else {
+            token.setCounterId(null); // remove old assignment
+        }
+
+        // Reset status to WAITING
+        token.setStatus(TokenStatus.WAITING);
+
+        // Reset time fields
+        token.setCalledAt(null);
+        token.setStartAt(null);
+        token.setEndAt(null);
+
+        // Save
+        return tokenRepository.save(token);
+    }
+
 }

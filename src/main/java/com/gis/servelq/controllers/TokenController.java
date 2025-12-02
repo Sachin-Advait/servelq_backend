@@ -1,9 +1,6 @@
 package com.gis.servelq.controllers;
 
-import com.gis.servelq.dto.LiveTokenDTO;
-import com.gis.servelq.dto.TokenDTO;
-import com.gis.servelq.dto.TokenRequest;
-import com.gis.servelq.dto.TokenResponse;
+import com.gis.servelq.dto.*;
 import com.gis.servelq.models.Token;
 import com.gis.servelq.repository.TokenRepository;
 import com.gis.servelq.services.TokenService;
@@ -44,6 +41,12 @@ public class TokenController {
     public ResponseEntity<List<LiveTokenDTO>> getLiveTokens() {
         List<LiveTokenDTO> latestCalledTokens = tokenService.getLatestCalledTokens();
         return ResponseEntity.ok(latestCalledTokens);
+    }
+
+    @PostMapping("/transfer")
+    public ResponseEntity<TokenDTO> transferToken(@RequestBody TokenTransferRequest request) {
+        Token token = tokenService.transferToken(request);
+        return ResponseEntity.ok(TokenDTO.fromEntity(token));
     }
 
 }
