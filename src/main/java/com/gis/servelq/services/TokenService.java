@@ -46,9 +46,7 @@ public class TokenService {
         // Calculate waiting count
         long waitingCount = tokenRepository.countByServiceIdAndStatus(serviceModel.getId(), TokenStatus.WAITING);
 
-        TokenResponse response = getTokenResponse(savedToken, serviceModel, waitingCount);
-
-        return response;
+        return getTokenResponse(savedToken, serviceModel, waitingCount);
     }
 
     private static TokenResponse getTokenResponse(Token savedToken, ServiceModel serviceModel, long waitingCount) {
@@ -78,9 +76,8 @@ public class TokenService {
     private String generateTokenNumber(Branch branch) {
         Optional<Integer> lastNumber = tokenRepository.findLastTokenNumber(branch.getId());
         int nextNumber = lastNumber.orElse(1000) + 1;
-        return String.valueOf(nextNumber);
+        return "A" + nextNumber;
     }
-
 
     public List<TokenDTO> getUpcomingTokensForCounter(String counterId) {
         return tokenRepository.findUpcomingTokensForCounter(counterId)
