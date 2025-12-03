@@ -14,8 +14,6 @@ import java.util.Optional;
 @Repository
 public interface TokenRepository extends JpaRepository<Token, String> {
     List<Token> findByBranchIdAndStatusOrderByPriorityAscCreatedAtAsc(String branchId, TokenStatus status);
-    List<Token> findByServiceIdAndStatusOrderByPriorityAscCreatedAtAsc(String serviceId, TokenStatus status);
-    List<Token> findByCounterIdAndStatusOrderByPriorityAscCreatedAtAsc(String counterId, TokenStatus status);
     List<Token> findByStatus(TokenStatus status);
 
     @Query("SELECT t FROM Token t WHERE t.branchId = :branchId AND t.status IN ('CALLING') " +
@@ -23,15 +21,12 @@ public interface TokenRepository extends JpaRepository<Token, String> {
     List<Token> findLatestCalledTokens(@Param("branchId") String branchId);
 
     @Query("""
-    SELECT t FROM Token t
-    WHERE t.status = 'WAITING'
-      AND t.serviceId IN (
-          SELECT s.id FROM Counter c JOIN c.services s WHERE c.id = :counterId
-      )
-    ORDER BY t.priority ASC, t.createdAt ASC
+SELECT t FROM Token t
+WHERE t.status = 'WAITING'
+  AND (t.counterId IS NULL OR t.counterId = :counterId)
+ORDER BY t.priority ASC, t.createdAt ASC
 """)
     List<Token> findUpcomingTokensForCounter(@Param("counterId") String counterId);
-
 
     Optional<Token> findFirstByServiceIdAndStatusOrderByPriorityAscCreatedAtAsc(String serviceId, TokenStatus status);
 

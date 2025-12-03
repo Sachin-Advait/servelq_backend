@@ -1,6 +1,7 @@
 package com.gis.servelq.controllers;
 
 import com.gis.servelq.dto.AgentCallResponse;
+import com.gis.servelq.dto.LiveTokenDTO;
 import com.gis.servelq.dto.RecentServiceDTO;
 import com.gis.servelq.services.TokenService;
 import lombok.RequiredArgsConstructor;
@@ -48,10 +49,15 @@ public class AgentController {
 
     @PostMapping("/recall")
     public ResponseEntity<AgentCallResponse> recallToken(
-            @RequestParam String tokenId,
-            @RequestParam String counterId
+            @RequestParam String tokenId
     ) {
         AgentCallResponse response = tokenService.recallToken(tokenId);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/counter/active-token/{counterId}")
+    public ResponseEntity<AgentCallResponse> getActiveToken(@PathVariable String counterId) {
+        AgentCallResponse dto = tokenService.getServingOrCallingTokenByCounter(counterId);
+        return ResponseEntity.ok(dto);
     }
 }

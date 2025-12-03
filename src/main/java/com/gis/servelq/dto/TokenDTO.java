@@ -9,6 +9,7 @@ public class TokenDTO {
     private String token;
     private String serviceId;
     private String serviceName;
+    private String counterId;
     private Integer priority;
     private String status;
 
@@ -18,6 +19,7 @@ public class TokenDTO {
         dto.setId(token.getId());
         dto.setToken(token.getToken());
         dto.setServiceId(token.getServiceId());
+        dto.setCounterId(token.getCounterId());
         // Accessing service name safely (lazy-loaded)
         if (token.getService() != null) {
             dto.setServiceName(token.getService().getName());

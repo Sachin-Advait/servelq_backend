@@ -271,28 +271,33 @@ public class TokenService {
         return tokenRepository.save(token);
     }
 
-    public LiveTokenDTO getServingOrCallingTokenByCounter(String counterId) {
-
-        // 1️⃣ Try SERVING token
+    public AgentCallResponse getServingOrCallingTokenByCounter(String counterId) {
         Optional<Token> serving = tokenRepository
                 .findFirstByCounterIdAndStatus(counterId, TokenStatus.SERVING);
-
-        if (serving.isPresent()) {
-            return LiveTokenDTO.fromEntity(serving.get());
-        }
-
-        // 2️⃣ If no serving, try CALLING token
         Optional<Token> calling = tokenRepository
                 .findFirstByCounterIdAndStatus(counterId, TokenStatus.CALLING);
 
-        if (calling.isPresent()) {
-            return LiveTokenDTO.fromEntity(calling.get());
+        Token token = serving.orElseGet(() -> calling.orElse(null));
+
+        if (token == null) {
+            throw new RuntimeException("No serving or calling token found for this counter");
         }
+        // Build response same style as callNextToken / recallToken
+        AgentCallResponse response = new AgentCallResponse();
+        response.setTokenId(token.getId());
+        response.setToken(token.getToken());
+        response.setServiceName(token.getService().getName());
+        response.setCounterId(token.getCounter().getId());
+        response.setCounterName(token.getCounter().getName());
+        response.setCalledAt(token.getCalledAt());
+        response.setCivilId(token.getCivilId());
 
-        throw new RuntimeException("No serving or calling token found for this counter");
+        // Waiting count for that service
+        long waitingCount = tokenRepository.countByServiceIdAndStatus(
+                token.getServiceId(), TokenStatus.WAITING
+        );
+        response.setWaitingCount((int) waitingCount);
+
+        return response;
     }
-
-
-
-
 }

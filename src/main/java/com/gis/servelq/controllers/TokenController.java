@@ -48,10 +48,4 @@ public class TokenController {
         Token token = tokenService.transferToken(request);
         return ResponseEntity.ok(TokenDTO.fromEntity(token));
     }
-
-    @GetMapping("/counter/{counterId}/active")
-    public ResponseEntity<LiveTokenDTO> getActiveToken(@PathVariable String counterId) {
-        LiveTokenDTO dto = tokenService.getServingOrCallingTokenByCounter(counterId);
-        return ResponseEntity.ok(dto);
-    }
 }
