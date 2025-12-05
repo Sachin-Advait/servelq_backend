@@ -202,21 +202,6 @@ public class TokenService {
         }
     }
 
-    public List<LiveTokenDTO> getLatestCalledTokens() {
-        return tokenRepository.findByStatus(TokenStatus.CALLING)
-                .stream()
-                .map(LiveTokenDTO::fromEntity)
-                .toList();
-    }
-
-    public List<LiveTokenDTO> getServingTokens() {
-        return tokenRepository.findByStatus(TokenStatus.SERVING)
-                .stream()
-                .map(LiveTokenDTO::fromEntity)
-                .toList();
-    }
-
-
     public List<RecentServiceDTO> getRecentServices() {
         List<Token> completedTokens = tokenRepository.findByStatus(TokenStatus.DONE);
 

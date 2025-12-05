@@ -30,22 +30,4 @@ public class TokenController {
         Token token = tokenService.getTokenById(tokenId);
         return ResponseEntity.ok(TokenDTO.fromEntity(token));
     }
-
-    @GetMapping("/live/serving")
-    public ResponseEntity<List<LiveTokenDTO>> getServingTokens() {
-        List<LiveTokenDTO> tokens = tokenService.getServingTokens();
-        return ResponseEntity.ok(tokens);
-    }
-
-    @GetMapping("/now-calling")
-    public ResponseEntity<List<LiveTokenDTO>> getLiveTokens() {
-        List<LiveTokenDTO> latestCalledTokens = tokenService.getLatestCalledTokens();
-        return ResponseEntity.ok(latestCalledTokens);
-    }
-
-    @PostMapping("/transfer")
-    public ResponseEntity<TokenDTO> transferToken(@RequestBody TokenTransferRequest request) {
-        Token token = tokenService.transferToken(request);
-        return ResponseEntity.ok(TokenDTO.fromEntity(token));
-    }
 }

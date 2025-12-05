@@ -1,8 +1,7 @@
 package com.gis.servelq.controllers;
 
-import com.gis.servelq.dto.AgentCallResponse;
-import com.gis.servelq.dto.LiveTokenDTO;
-import com.gis.servelq.dto.RecentServiceDTO;
+import com.gis.servelq.dto.*;
+import com.gis.servelq.models.Token;
 import com.gis.servelq.services.TokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -59,5 +58,11 @@ public class AgentController {
     public ResponseEntity<AgentCallResponse> getActiveToken(@PathVariable String counterId) {
         AgentCallResponse dto = tokenService.getServingOrCallingTokenByCounter(counterId);
         return ResponseEntity.ok(dto);
+    }
+
+    @PostMapping("/transfer")
+    public ResponseEntity<TokenDTO> transferToken(@RequestBody TokenTransferRequest request) {
+        Token token = tokenService.transferToken(request);
+        return ResponseEntity.ok(TokenDTO.fromEntity(token));
     }
 }
