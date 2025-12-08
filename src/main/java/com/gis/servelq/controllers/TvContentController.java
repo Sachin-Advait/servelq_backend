@@ -15,7 +15,7 @@ public class TvContentController {
 
     private final TvContentService service;
 
-    @GetMapping("/{branchId}")
+    @GetMapping("/serveiq/{branchId}")
     public List<TvContent> getContent(@PathVariable String branchId) {
         return service.getByBranch(branchId);
     }

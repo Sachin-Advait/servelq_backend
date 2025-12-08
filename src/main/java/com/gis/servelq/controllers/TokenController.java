@@ -11,7 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/tokens")
+@RequestMapping("/serveiq/api/tokens")
 @RequiredArgsConstructor
 public class TokenController {
     private final TokenService tokenService;

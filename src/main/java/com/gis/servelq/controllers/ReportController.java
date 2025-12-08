@@ -13,7 +13,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/reports")
+@RequestMapping("/serveiq/api/reports")
 @RequiredArgsConstructor
 public class ReportController {
 

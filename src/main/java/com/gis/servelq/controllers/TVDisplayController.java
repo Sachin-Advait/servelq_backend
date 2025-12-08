@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/tv-display")
+@RequestMapping("/serveiq/api/tv-display")
 @RequiredArgsConstructor
 public class TVDisplayController {
     private final TVDisplayService tvDisplayService;

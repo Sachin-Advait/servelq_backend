@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/branches")
+@RequestMapping("/serveiq/api/branches")
 @RequiredArgsConstructor
 public class BranchController {
 
