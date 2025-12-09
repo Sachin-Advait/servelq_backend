@@ -20,34 +20,34 @@ public interface TokenRepository extends JpaRepository<Token, String> {
 
     Optional<Token> findFirstByServiceIdAndStatusOrderByPriorityAscCreatedAtAsc(String serviceId, TokenStatus status);
 
-    Optional<Token> findFirstByCounterIdAndStatus(String counterId, TokenStatus status);
+    Optional<Token> findFirstByAssignedCounterIdAndStatus(String assignedCounterId, TokenStatus status);
 
     long countByServiceIdAndStatus(String serviceId, TokenStatus status);
 
     @Query("""
-    SELECT t FROM Token t 
-    WHERE t.branchId = :branchId 
-      AND t.status = com.gis.servelq.models.TokenStatus.CALLING
-    ORDER BY t.startAt DESC
-    """)
+            SELECT t FROM Token t
+            WHERE t.branchId = :branchId
+              AND t.status = com.gis.servelq.models.TokenStatus.CALLING
+            ORDER BY t.startAt DESC
+            """)
     List<Token> findLatestCalledTokens(@Param("branchId") String branchId);
 
 
-    @Query("""
-            SELECT t FROM Token t
-            WHERE t.status = com.gis.servelq.models.TokenStatus.WAITING
-              AND (
-                    t.counterId IS NULL
-                    OR t.counterId = ''
-                    OR t.counterId = :counterId
-                    OR t.counterId LIKE CONCAT(:counterId, ',%')
-                    OR t.counterId LIKE CONCAT('%,', :counterId)
-                    OR t.counterId LIKE CONCAT('%,', :counterId, ',%')
-                  )
-            ORDER BY
-                t.priority DESC,
-                CASE WHEN t.isTransfer = true THEN 0 ELSE 1 END ASC,
-                t.createdAt ASC
+    @Query(value = """
+                SELECT t FROM Token t
+                WHERE t.status = com.gis.servelq.models.TokenStatus.WAITING
+                  AND (
+                        t.counterIds IS NULL
+                        OR t.counterIds = ''
+                        OR t.counterIds LIKE CONCAT(:counterId)
+                        OR t.counterIds LIKE CONCAT(:counterId, ',%')
+                        OR t.counterIds LIKE CONCAT('%,', :counterId)
+                        OR t.counterIds LIKE CONCAT('%,', :counterId, ',%')
+                      )
+                ORDER BY
+                    t.priority DESC,
+                    CASE WHEN t.isTransfer = true THEN 0 ELSE 1 END ASC,
+                    t.createdAt ASC
             """)
     List<Token> findUpcomingTokensForCounter(@Param("counterId") String counterId);
 

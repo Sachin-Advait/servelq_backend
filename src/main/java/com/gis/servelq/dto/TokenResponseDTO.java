@@ -17,6 +17,7 @@ public class TokenResponseDTO {
     private String serviceName;
     private String serviceCode;
     private String serviceId;
+    private String mobileNumber;
 
     private TokenStatus status;
 
@@ -40,6 +41,7 @@ public class TokenResponseDTO {
         dto.setStatus(token.getStatus());
         dto.setCounterId(token.getAssignedCounterId());
         dto.setCounterName(token.getAssignedCounterName());
+        dto.setMobileNumber(token.getMobileNumber());
 
         // Optional date/time fields → format only if not null
         if (token.getCreatedAt() != null)

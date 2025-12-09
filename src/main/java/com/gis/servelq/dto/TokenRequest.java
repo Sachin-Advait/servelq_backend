@@ -9,10 +9,9 @@ import java.util.List;
 public class TokenRequest {
     @NotBlank
     private String serviceId;
-
     @NotBlank
     private String branchId;
     private String mobileNumber;
     private List<String> counterIds;
-    private Integer priority;
+    private Integer priority = 50;
 }

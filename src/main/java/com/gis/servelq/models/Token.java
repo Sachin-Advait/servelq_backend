@@ -40,6 +40,7 @@ public class Token {
     @NotNull
     private TokenStatus status = TokenStatus.WAITING;
 
+    @NotBlank
     @Column(name = "mobile_number")
     private String mobileNumber;
 
@@ -51,7 +52,7 @@ public class Token {
 
     @Column(name = "counter_ids")
     @Convert(converter = StringListConverter.class)
-    private List<String> counterId;
+    private List<String> counterIds;
 
     private Boolean isTransfer = false;
     private String transferFrom;

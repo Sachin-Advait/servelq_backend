@@ -208,9 +208,9 @@ public class AgentService {
 
     public AgentCallResponseDTO getServingOrCallingTokenByCounter(String counterId) {
         Optional<Token> serving = tokenRepository
-                .findFirstByCounterIdAndStatus(counterId, TokenStatus.SERVING);
+                .findFirstByAssignedCounterIdAndStatus(counterId, TokenStatus.SERVING);
         Optional<Token> calling = tokenRepository
-                .findFirstByCounterIdAndStatus(counterId, TokenStatus.CALLING);
+                .findFirstByAssignedCounterIdAndStatus(counterId, TokenStatus.CALLING);
 
         Token token = serving.or(() -> calling).orElseThrow(
                 () -> new RuntimeException("No serving or calling token found")
@@ -235,7 +235,6 @@ public class AgentService {
         return response;
     }
 
-    // 🔥 NEW METHOD → replaces old socketService.agentUpcoming()
     public void notifyAgentUpcoming(String counterId) {
         List<TokenResponseDTO> data = getUpcomingTokensForCounter(counterId);
         socketService.broadcast("/topic/agent-upcoming/" + counterId, data);

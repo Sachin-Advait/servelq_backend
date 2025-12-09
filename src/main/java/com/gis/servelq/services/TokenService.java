@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -24,12 +23,12 @@ public class TokenService {
     private final ServiceRepository serviceRepository;
     private final BranchRepository branchRepository;
     private final SocketService socketService;
-    private final AgentService agentService; // ✅ NEW
+    private final AgentService agentService;
 
     @Transactional
     public TokenResponseDTO generateToken(TokenRequest request) {
 
-        Services serviceModel = serviceRepository.findById(request.getServiceId())
+        Services service = serviceRepository.findById(request.getServiceId())
                 .orElseThrow(() -> new RuntimeException("Service not found"));
 
         Branch branch = branchRepository.findById(request.getBranchId())
@@ -40,23 +39,21 @@ public class TokenService {
         Token token = new Token();
         token.setToken(tokenNumber);
         token.setBranchId(branch.getId());
-        token.setServiceId(serviceModel.getId());
-        token.setServiceName(serviceModel.getName());
+        token.setServiceId(service.getId());
+        token.setServiceName(service.getName());
 
-        token.setPriority(request.getPriority());
+        if (request.getPriority() != null) token.setPriority(request.getPriority());
         token.setStatus(TokenStatus.WAITING);
         token.setMobileNumber(request.getMobileNumber());
 
         if (request.getCounterIds() != null) {
-            token.setCounterId(request.getCounterIds());
+            token.setCounterIds(request.getCounterIds());
         }
 
         Token savedToken = tokenRepository.save(token);
 
         // Update waiting count for the service
-        tokenRepository.countByServiceIdAndStatus(
-                serviceModel.getId(), TokenStatus.WAITING
-        );
+        tokenRepository.countByServiceIdAndStatus(service.getId(), TokenStatus.WAITING);
 
         // ✅ FIXED — notify each counter using AgentService method
         if (request.getCounterIds() != null) {
@@ -65,9 +62,7 @@ public class TokenService {
             }
         }
 
-        // Refresh TV display
         socketService.tvSocket(request.getBranchId());
-
         return TokenResponseDTO.fromEntity(savedToken);
     }
 
