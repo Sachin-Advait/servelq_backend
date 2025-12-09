@@ -18,6 +18,6 @@ public class CounterRequest {
     private String userId;
     private Boolean enabled;
     private Boolean paused;
-    private CounterStatus status;
+    private CounterStatus status = CounterStatus.IDLE;
     private String serviceId;
 }

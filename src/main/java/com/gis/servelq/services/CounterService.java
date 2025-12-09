@@ -140,13 +140,6 @@ public class CounterService {
         return convertToResponse(counter);
     }
 
-    // Get counter by code+branch
-    public CounterResponseDTO getCounterByCodeAndBranch(String code, String branchId) {
-        Counter counter = counterRepository.findByCodeAndBranchId(code, branchId)
-                .orElseThrow(() -> new RuntimeException("Counter not found"));
-        return convertToResponse(counter);
-    }
-
     // Update counter
     @Transactional
     public CounterResponseDTO updateCounter(String counterId, CounterRequest request) {
