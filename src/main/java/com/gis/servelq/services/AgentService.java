@@ -130,8 +130,8 @@ public class AgentService {
         socketService.tvSocket(token.getBranchId());
     }
 
-    public List<RecentServiceDTO> getRecentServices() {
-        return tokenRepository.findByStatus(TokenStatus.DONE)
+    public List<RecentServiceDTO> getRecentServices(String counterId) {
+        return tokenRepository.findByStatusAndAssignedCounterId(TokenStatus.DONE, counterId)
                 .stream()
                 .map(token -> RecentServiceDTO.fromEntity(
                         token.getToken(),

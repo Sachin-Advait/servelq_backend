@@ -43,9 +43,9 @@ public class AgentController {
 
     }
 
-    @GetMapping("/recent-services")
-    public ResponseEntity<List<RecentServiceDTO>> getRecentServices() {
-        List<RecentServiceDTO> recentServices = agentService.getRecentServices();
+    @GetMapping("/recent-services/{counterId}")
+    public ResponseEntity<List<RecentServiceDTO>> getRecentServices(@PathVariable String counterId) {
+        List<RecentServiceDTO> recentServices = agentService.getRecentServices(counterId);
         return ResponseEntity.ok(recentServices);
     }
 
