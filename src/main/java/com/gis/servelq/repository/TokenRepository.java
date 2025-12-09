@@ -18,7 +18,10 @@ public interface TokenRepository extends JpaRepository<Token, String> {
 
     List<Token> findByStatusAndAssignedCounterId(TokenStatus status, String assignedCounterId);
 
-    Optional<Token> findFirstByServiceIdAndStatusOrderByPriorityAscCreatedAtAsc(String serviceId, TokenStatus status);
+    Optional<Token> findFirstByServiceIdAndStatusOrderByPriorityDescIsTransferDescCreatedAtAsc(
+            String serviceId,
+            TokenStatus status
+    );
 
     Optional<Token> findFirstByAssignedCounterIdAndStatus(String assignedCounterId, TokenStatus status);
 

@@ -46,7 +46,7 @@ public class AgentService {
                 .orElseThrow(() -> new RuntimeException("Service not found"));
 
         Optional<Token> optionalToken =
-                tokenRepository.findFirstByServiceIdAndStatusOrderByPriorityAscCreatedAtAsc(
+                tokenRepository.findFirstByServiceIdAndStatusOrderByPriorityDescIsTransferDescCreatedAtAsc(
                         service.getId(),
                         TokenStatus.WAITING
                 );
