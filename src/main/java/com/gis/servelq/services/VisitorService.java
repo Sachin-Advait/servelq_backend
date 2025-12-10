@@ -21,4 +21,8 @@ public class VisitorService {
     public Optional<Visitor> getVisitorById(String id) {
         return visitorRepository.findById(id);
     }
+
+    public Visitor createVisitor(Visitor visitor) {
+        return visitorRepository.save(visitor);
+    }
 }

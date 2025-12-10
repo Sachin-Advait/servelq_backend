@@ -15,6 +15,12 @@ public class VisitorController {
 
     private final VisitorService visitorService;
 
+    // CREATE
+    @PostMapping
+    public ResponseEntity<Visitor> createVisitor(@RequestBody Visitor visitor) {
+        return ResponseEntity.ok(visitorService.createVisitor(visitor));
+    }
+
     // GET ALL
     @GetMapping
     public ResponseEntity<List<Visitor>> getAllVisitors() {
