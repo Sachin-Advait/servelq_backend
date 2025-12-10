@@ -21,9 +21,6 @@ public class Visitor {
     private String name;
     @NotBlank
     private String mobileNumber;
-
-
-
     @NotNull
     private String visitorId;
 

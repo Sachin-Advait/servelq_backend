@@ -18,8 +18,8 @@ public class VisitorService {
         return visitorRepository.findAll();
     }
 
-    public Optional<Visitor> getVisitorById(String id) {
-        return visitorRepository.findById(id);
+    public Optional<Visitor> getVisitorById(String visitorId) {
+        return visitorRepository.findByVisitorId(visitorId);
     }
 
     public Visitor createVisitor(Visitor visitor) {
