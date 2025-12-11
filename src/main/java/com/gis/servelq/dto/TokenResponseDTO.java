@@ -50,11 +50,22 @@ public class TokenResponseDTO {
         dto.setCounterId(token.getAssignedCounterId());
         dto.setCounterName(token.getAssignedCounterName());
 
-        dto.setGeneratedTime(token.getCreatedAt().toString());
-        dto.setStartTime(token.getStartAt().toString());
-        dto.setEndTime(token.getEndAt().toString());
-        dto.setWaitTime(calculateDuration(token.getCreatedAt(), token.getStartAt()));
-        dto.setServingDuration(calculateDuration(token.getStartAt(), token.getEndAt()));
+        if (token.getCreatedAt() != null)
+            dto.setGeneratedTime(token.getCreatedAt().toString());
+
+        if (token.getStartAt() != null)
+            dto.setStartTime(token.getStartAt().toString());
+
+        if (token.getEndAt() != null)
+            dto.setEndTime(token.getEndAt().toString());
+
+        // waitTime = startTime - generatedTime
+        if (token.getStartAt() != null && token.getCreatedAt() != null)
+            dto.setWaitTime(calculateDuration(token.getCreatedAt(), token.getStartAt()));
+
+        // servingDuration = endTime - startTime
+        if (token.getStartAt() != null && token.getEndAt() != null)
+            dto.setServingDuration(calculateDuration(token.getStartAt(), token.getEndAt()));
 
         return dto;
     }
