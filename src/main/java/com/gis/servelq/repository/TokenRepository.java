@@ -16,7 +16,7 @@ public interface TokenRepository extends JpaRepository<Token, String> {
 
     List<Token> findByBranchIdAndStatusOrderByPriorityAscCreatedAtAsc(String branchId, TokenStatus status);
 
-    List<Token> findByStatusAndAssignedCounterId(TokenStatus status, String assignedCounterId);
+    List<Token> findTop20ByStatusAndAssignedCounterIdOrderByEndAtDesc(TokenStatus status, String assignedCounterId);
 
     Optional<Token> findByStatusInAndAssignedCounterId(List<TokenStatus> statuses, String assignedCounterId);
 
@@ -80,4 +80,14 @@ public interface TokenRepository extends JpaRepository<Token, String> {
                 WHERE t.branchId = :branchId
             """)
     Optional<Integer> findLastTokenNumber(@Param("branchId") String branchId);
+
+    @Query("""
+               SELECT AVG(TIMESTAMPDIFF(SECOND, t.startAt, t.endAt))
+               FROM Token t
+               WHERE t.assignedCounterId = :counterId
+               AND t.startAt IS NOT NULL
+               AND t.endAt IS NOT NULL
+               AND t.status = 'DONE'
+            """)
+    Double getAvgServiceTimeSecondsByCounter(@Param("counterId") String counterId);
 }

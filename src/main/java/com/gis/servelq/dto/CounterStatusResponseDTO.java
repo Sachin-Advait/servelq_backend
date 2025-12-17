@@ -1,5 +1,6 @@
 package com.gis.servelq.dto;
 
+import com.gis.servelq.models.CounterStatus;
 import lombok.Data;
 
 @Data
@@ -10,7 +11,7 @@ public class CounterStatusResponseDTO {
 
     private Boolean enabled;
     private Boolean paused;
-    private String status;
+    private CounterStatus status;
 
     // These fields will be null when no token is assigned or upcoming
     private String tokenNumber;

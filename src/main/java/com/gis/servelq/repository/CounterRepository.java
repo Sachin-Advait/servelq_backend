@@ -10,5 +10,8 @@ import java.util.Optional;
 @Repository
 public interface CounterRepository extends JpaRepository<Counter, String> {
     Optional<Counter> findByCodeAndBranchId(String code, String branchId);
+
+    Optional<Counter> findByCode(String code);
+
     List<Counter> findByBranchId(String branchId);
 }

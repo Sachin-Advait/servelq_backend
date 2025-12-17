@@ -42,6 +42,15 @@ public class CounterService {
         return counter;
     }
 
+    public Double getAverageServiceTimeMinutesByCounter(String counterId) {
+        Double avgSeconds =
+                tokenRepository.getAvgServiceTimeSecondsByCounter(counterId);
+
+        if (avgSeconds == null) return 0.0;
+
+        return avgSeconds / 60.0;
+    }
+
     private CounterResponseDTO convertToResponse(Counter counter) {
         Branch branch = branchRepository.findById(counter.getBranchId())
                 .orElseThrow(() -> new RuntimeException("Branch not found"));
@@ -57,7 +66,8 @@ public class CounterService {
             service = serviceRepository.findById(counter.getServiceId()).orElse(null);
         }
 
-        return CounterResponseDTO.fromEntity(counter, branch, username, service);
+        Double avgSeconds = getAverageServiceTimeMinutesByCounter(counter.getId());
+        return CounterResponseDTO.fromEntity(counter, branch, username, service, avgSeconds);
     }
 
     // Create a new counter
@@ -175,7 +185,7 @@ public class CounterService {
         response.setName(counter.getName());
         response.setEnabled(counter.getEnabled());
         response.setPaused(counter.getPaused());
-        response.setStatus(counter.getStatus().name());
+        response.setStatus(counter.getStatus());
 
         // Fetch currently serving token
         if (counter.getStatus() == CounterStatus.SERVING || counter.getStatus() == CounterStatus.CALLING) {

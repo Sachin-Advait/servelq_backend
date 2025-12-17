@@ -1,7 +1,10 @@
 package com.gis.servelq.services;
 
 import com.gis.servelq.dto.*;
-import com.gis.servelq.models.*;
+import com.gis.servelq.models.Counter;
+import com.gis.servelq.models.CounterStatus;
+import com.gis.servelq.models.Token;
+import com.gis.servelq.models.TokenStatus;
 import com.gis.servelq.repository.CounterRepository;
 import com.gis.servelq.repository.ServiceRepository;
 import com.gis.servelq.repository.TokenRepository;
@@ -39,8 +42,7 @@ public class AgentService {
         if (counter.getPaused()) {
             throw new RuntimeException("Counter is paused");
         }
-
-        Services service = serviceRepository.findById(counter.getServiceId())
+        serviceRepository.findById(counter.getServiceId())
                 .orElseThrow(() -> new RuntimeException("Service not found"));
 
         Optional<Token> optionalToken = tokenRepository.findNextToken(counterId);
@@ -115,7 +117,7 @@ public class AgentService {
         if (token.getAssignedCounterId() != null) {
             Counter counter = counterRepository.findById(token.getAssignedCounterId())
                     .orElseThrow(() -> new RuntimeException("Counter not found"));
-            counter.setStatus(CounterStatus.IDLE);
+            counter.setStatus(CounterStatus.COMPLETE);
             counterRepository.save(counter);
 
             notifyAgentUpcoming(counter.getId());
@@ -125,7 +127,7 @@ public class AgentService {
     }
 
     public List<RecentServiceDTO> getRecentServices(String counterId) {
-        return tokenRepository.findByStatusAndAssignedCounterId(TokenStatus.DONE, counterId)
+        return tokenRepository.findTop20ByStatusAndAssignedCounterIdOrderByEndAtDesc(TokenStatus.DONE, counterId)
                 .stream()
                 .map(token -> RecentServiceDTO.fromEntity(
                         token.getToken(),
@@ -180,7 +182,14 @@ public class AgentService {
         Counter toCounter = counterRepository.findById(request.getToCounterId())
                 .orElseThrow(() -> new RuntimeException("Target counter not found"));
 
+        Counter fromCounter = counterRepository.findById(token.getAssignedCounterId())
+                .orElseThrow(() -> new RuntimeException("Target counter not found"));
+
+        fromCounter.setStatus(CounterStatus.IDLE);
+        counterRepository.save(fromCounter);
+
         String fromCounterId = token.getAssignedCounterId();
+
 
         token.setIsTransfer(true);
         token.setTransferFrom(fromCounterId);
@@ -208,10 +217,7 @@ public class AgentService {
 
         Token updated = tokenRepository.save(token);
 
-        // refresh TV screen
         socketService.tvSocket(token.getBranchId());
-
-        // refresh agent screen for that counter
         notifyAgentUpcoming(toCounter.getId());
 
         return updated;

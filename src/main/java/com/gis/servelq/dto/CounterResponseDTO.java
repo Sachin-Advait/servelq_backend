@@ -23,6 +23,7 @@ public class CounterResponseDTO {
     private String userId;
     private String username;
     private ServiceResponseDTO service;
+    private Double avgSeconds;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -31,7 +32,8 @@ public class CounterResponseDTO {
             Counter counter,
             Branch branch,
             String username,
-            Services service
+            Services service,
+            Double avgSeconds
     ) {
         CounterResponseDTO dto = new CounterResponseDTO();
 
@@ -43,6 +45,7 @@ public class CounterResponseDTO {
         dto.setStatus(counter.getStatus());
         dto.setUserId(counter.getUserId());
         dto.setUsername(username);
+        dto.setAvgSeconds(avgSeconds);
         dto.setCreatedAt(counter.getCreatedAt());
         dto.setUpdatedAt(counter.getUpdatedAt());
 

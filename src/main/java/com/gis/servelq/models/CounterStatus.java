@@ -5,6 +5,7 @@ public enum CounterStatus {
     IDLE,
     CALLING,
     SERVING,
+    COMPLETE,
     PAUSED,
     CLOSED
 }
