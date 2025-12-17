@@ -188,10 +188,11 @@ public class CounterService {
         response.setStatus(counter.getStatus());
 
         // Fetch currently serving token
-        if (counter.getStatus() == CounterStatus.SERVING || counter.getStatus() == CounterStatus.CALLING) {
+        if (counter.getStatus() == CounterStatus.SERVING || counter.getStatus() == CounterStatus.CALLING ||
+                counter.getStatus() == CounterStatus.COMPLETE) {
             var token = tokenRepository
                     .findByStatusInAndAssignedCounterId(
-                            List.of(TokenStatus.SERVING, TokenStatus.CALLING),
+                            List.of(TokenStatus.SERVING, TokenStatus.CALLING, TokenStatus.REVIEW),
                             counterId
                     )
                     .orElse(null);
@@ -213,6 +214,6 @@ public class CounterService {
 
     public void notifyCounterDisplay(String counterId) {
         CounterStatusResponseDTO data = getCounterStatusDetails(counterId);
-        socketService.broadcast("/topic/counter/" + counterId, data);
+        socketService.broadcast("/topic/counter-display/" + counterId, data);
     }
 }

@@ -1,12 +1,12 @@
 package com.gis.servelq.services;
 
-import com.gis.servelq.models.Counter;
-import com.gis.servelq.models.CounterStatus;
-import com.gis.servelq.models.Feedback;
+import com.gis.servelq.models.*;
 import com.gis.servelq.repository.CounterRepository;
 import com.gis.servelq.repository.FeedbackRepository;
+import com.gis.servelq.repository.TokenRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.List;
@@ -18,16 +18,30 @@ public class FeedbackService {
 
     private final FeedbackRepository feedbackRepository;
     private final CounterRepository counterRepository;
+    private final TokenRepository tokenRepository;
     private final AgentService agentService;
+    private final SocketService socketService;
 
+    @Transactional
     public Feedback createFeedback(Feedback feedback) {
-
         Counter counter = counterRepository.findByCode(feedback.getCounterCode())
                 .orElseThrow(() -> new RuntimeException("Counter not found"));
+
+        Token token = tokenRepository.findById(feedback.getTokenId())
+                .orElseThrow(() -> new RuntimeException("Token not found"));
+
+        token.setStatus(TokenStatus.DONE);
+        tokenRepository.save(token);
+
         counter.setStatus(CounterStatus.IDLE);
         counterRepository.save(counter);
 
         agentService.notifyAgentUpcoming(counter.getId());
+        Counter counterResponseDTO = counterRepository.findById(counter.getId())
+                .orElseThrow();
+
+        socketService.broadcast("/topic/counter/" + counter.getId(), counterResponseDTO);
+
         return feedbackRepository.save(feedback);
     }
 

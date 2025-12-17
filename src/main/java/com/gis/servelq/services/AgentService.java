@@ -110,7 +110,7 @@ public class AgentService {
         Token token = tokenRepository.findById(tokenId)
                 .orElseThrow(() -> new RuntimeException("Token not found"));
 
-        token.setStatus(TokenStatus.DONE);
+        token.setStatus(TokenStatus.REVIEW);
         token.setEndAt(LocalDateTime.now());
         tokenRepository.save(token);
 
@@ -173,7 +173,7 @@ public class AgentService {
         Token token = tokenRepository.findById(request.getTokenId())
                 .orElseThrow(() -> new RuntimeException("Token not found"));
 
-        if (token.getStatus() == TokenStatus.DONE ||
+        if (token.getStatus() == TokenStatus.DONE || token.getStatus() == TokenStatus.REVIEW ||
                 token.getStatus() == TokenStatus.CANCELED ||
                 token.getStatus() == TokenStatus.NO_SHOW) {
             throw new RuntimeException("Token cannot be transferred from status: " + token.getStatus());
@@ -219,6 +219,7 @@ public class AgentService {
 
         socketService.tvSocket(token.getBranchId());
         notifyAgentUpcoming(toCounter.getId());
+        notifyAgentUpcoming(fromCounter.getId());
 
         return updated;
     }
@@ -257,6 +258,9 @@ public class AgentService {
         socketService.broadcast("/topic/agent-upcoming/" + counterId, data);
 
         CounterStatusResponseDTO counterData = counterService.getCounterStatusDetails(counterId);
+
+        System.out.println("this is the counter Data for the display" + counterData);
+
         socketService.broadcast("/topic/counter-display/" + counterId, counterData);
     }
 }
