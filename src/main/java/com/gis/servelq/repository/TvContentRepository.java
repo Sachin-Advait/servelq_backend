@@ -9,4 +9,10 @@ import java.util.List;
 @Repository
 public interface TvContentRepository extends JpaRepository<TvContent, String> {
     List<TvContent> findByBranchId(String branchId);
+
+    List<TvContent> findByBranchIdAndTypeIn(String branchId, List<String> types);
+
+    List<TvContent> findByBranchIdAndType(String branchId, String type);
+    
+    List<TvContent> findByBranchIdAndTypeAndActive(String branchId, String type, Boolean active);
 }

@@ -3,19 +3,30 @@ package com.gis.servelq.services;
 import com.gis.servelq.models.TvContent;
 import com.gis.servelq.repository.TvContentRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class TvContentService {
 
-    private final TvContentRepository repo;
+    private final TvContentRepository tvContentRepository;
     private final SocketService socketService;
 
+    @Value("${image.upload.dir}")
+    private String uploadDir;
+
     public List<TvContent> getByBranch(String branchId) {
-        return repo.findByBranchId(branchId);
+        List<String> allowedTypes = List.of("URL", "VIDEO");
+        return tvContentRepository.findByBranchIdAndTypeIn(branchId, allowedTypes);
     }
 
     public TvContent addUrl(String branchId, String url, String name) {
@@ -25,7 +36,7 @@ public class TvContentService {
         t.setName(name);
         t.setType("URL");
         t.setActive(false);
-        return repo.save(t);
+        return tvContentRepository.save(t);
     }
 
     public TvContent addVideo(String branchId, String name) {
@@ -34,24 +45,72 @@ public class TvContentService {
         content.setName(name);
         content.setType("VIDEO");
         content.setActive(false);
-        return repo.save(content);
+        return tvContentRepository.save(content);
     }
 
     public void delete(String id) {
-        repo.deleteById(id);
+        tvContentRepository.deleteById(id);
     }
 
     public TvContent activate(String branchId, String id) {
         // Deactivate all for branch
-        List<TvContent> all = repo.findByBranchId(branchId);
+        List<TvContent> all = tvContentRepository.findByBranchId(branchId);
         all.forEach(c -> c.setActive(false));
-        repo.saveAll(all);
+        tvContentRepository.saveAll(all);
 
         // Activate required one
-        TvContent selected = repo.findById(id)
+        TvContent selected = tvContentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Content not found"));
         selected.setActive(true);
         socketService.tvSocket(branchId);
-        return repo.save(selected);
+        return tvContentRepository.save(selected);
+    }
+
+    public TvContent uploadImage(String branchId, MultipartFile file) throws IOException {
+
+        Files.createDirectories(Paths.get(uploadDir));
+
+        String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
+        Path filePath = Paths.get(uploadDir, filename);
+        Files.write(filePath, file.getBytes());
+
+        TvContent image = new TvContent();
+        image.setBranchId(branchId);
+        image.setName(file.getOriginalFilename());
+        image.setUrl("/images/" + filename);
+        image.setType("IMAGE");
+        image.setActive(false);
+
+        return tvContentRepository.save(image);
+    }
+
+    public List<TvContent> getAllImages(String branchId) {
+        return tvContentRepository.findByBranchIdAndType(branchId, "IMAGE");
+    }
+
+    public List<TvContent> getActiveImages(String branchId) {
+        return tvContentRepository.findByBranchIdAndTypeAndActive(branchId, "IMAGE", true);
+    }
+
+    public TvContent toggleImageStatus(String branchId, String id) {
+        TvContent image = tvContentRepository.findById(id).orElseThrow(() -> new RuntimeException("Image not found"));
+
+        image.setActive(!image.getActive());
+        TvContent savedImage = tvContentRepository.save(image);
+
+        List<TvContent> activeImages = getActiveImages(branchId);
+        socketService.broadcast("/topic/counter-display/image/" + branchId, activeImages);
+        return savedImage;
+    }
+
+    public void deleteImage(String id) throws IOException {
+        TvContent image = tvContentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Image not found"));
+
+        String fileName = Paths.get(image.getUrl()).getFileName().toString();
+        Path filePath = Paths.get(uploadDir, fileName);
+
+        Files.deleteIfExists(filePath);
+        tvContentRepository.deleteById(id);
     }
 }
