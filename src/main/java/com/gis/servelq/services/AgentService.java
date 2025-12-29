@@ -62,8 +62,6 @@ public class AgentService {
         counterRepository.save(counter);
 
         socketService.tvSocket(nextToken.getBranchId());
-
-        // Notify agent screen
         notifyAgentUpcoming(counterId);
 
         AgentCallResponseDTO response = new AgentCallResponseDTO();
@@ -149,6 +147,8 @@ public class AgentService {
 
         Counter counter = counterRepository.findById(token.getAssignedCounterId())
                 .orElseThrow(() -> new RuntimeException("Counter not found"));
+        counter.setStatus(CounterStatus.CALLING);
+        counterRepository.save(counter);
 
         notifyAgentUpcoming(counter.getId());
         socketService.tvSocket(token.getBranchId());
