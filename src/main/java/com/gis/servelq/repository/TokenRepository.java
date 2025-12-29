@@ -20,7 +20,13 @@ public interface TokenRepository extends JpaRepository<Token, String> {
 
     Optional<Token> findByStatusInAndAssignedCounterId(List<TokenStatus> statuses, String assignedCounterId);
 
-    long countByBranchIdAndStatus(String branchId, TokenStatus status);
+    @Query("""
+                select t.status, count(t)
+                from Token t
+                where t.branch.id = :branchId
+                group by t.status
+            """)
+    List<Object[]> countByBranchGrouped(String branchId);
 
     @Query(value = """
             SELECT *

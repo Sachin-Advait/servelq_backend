@@ -36,11 +36,24 @@ public class TVDisplayService {
                         branchId, TokenStatus.WAITING)
                 .stream().limit(10).toList();
 
-        // ✔ NEW — statistics
-        long waitingCount = tokenRepository.countByBranchIdAndStatus(branchId, TokenStatus.WAITING);
-        long servingCount = tokenRepository.countByBranchIdAndStatus(branchId, TokenStatus.SERVING);
-        long noShowCount = tokenRepository.countByBranchIdAndStatus(branchId, TokenStatus.NO_SHOW);
-        long completedCount = tokenRepository.countByBranchIdAndStatus(branchId, TokenStatus.DONE);
+        var counts = tokenRepository.countByBranchGrouped(branchId);
+
+        long waitingCount = 0;
+        long servingCount = 0;
+        long noShowCount = 0;
+        long completedCount = 0;
+
+        for (Object[] row : counts) {
+            TokenStatus status = (TokenStatus) row[0];
+            long count = (long) row[1];
+
+            switch (status) {
+                case WAITING -> waitingCount = count;
+                case SERVING -> servingCount = count;
+                case NO_SHOW -> noShowCount = count;
+                case DONE -> completedCount = count;
+            }
+        }
 
         TVDisplayResponseDTO response = new TVDisplayResponseDTO();
         response.setBranchName(branch.getName());

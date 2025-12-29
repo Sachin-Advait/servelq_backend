@@ -53,8 +53,9 @@ public class TvContentService {
     }
 
     public TvContent activate(String branchId, String id) {
+        List<String> allowedTypes = List.of("URL", "VIDEO");
         // Deactivate all for branch
-        List<TvContent> all = tvContentRepository.findByBranchId(branchId);
+        List<TvContent> all = tvContentRepository.findByBranchIdAndTypeIn(branchId, allowedTypes);
         all.forEach(c -> c.setActive(false));
         tvContentRepository.saveAll(all);
 
