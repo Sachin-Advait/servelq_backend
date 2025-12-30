@@ -10,9 +10,11 @@ import com.gis.servelq.repository.BranchRepository;
 import com.gis.servelq.repository.ServiceRepository;
 import com.gis.servelq.repository.TokenRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 @Service
@@ -27,7 +29,28 @@ public class TokenService {
 
     @Transactional
     public TokenResponseDTO generateToken(TokenRequest request) {
+        int attempts = 0;
+        int maxAttempts = 3;
 
+        while (true) {
+            try {
+                return createTokenOnce(request);
+            } catch (DataIntegrityViolationException e) {
+                if (++attempts >= maxAttempts) {
+                    throw new RuntimeException("Failed to generate token after " + maxAttempts + " attempts", e);
+                }
+                // Optional: small delay between retries to reduce collision
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    throw new RuntimeException("Token generation interrupted", ie);
+                }
+            }
+        }
+    }
+
+    private TokenResponseDTO createTokenOnce(TokenRequest request) {
         Services service = serviceRepository.findById(request.getServiceId())
                 .orElseThrow(() -> new RuntimeException("Service not found"));
 
@@ -42,7 +65,10 @@ public class TokenService {
         token.setServiceId(service.getId());
         token.setServiceName(service.getName());
 
-        if (request.getPriority() != null) token.setPriority(request.getPriority());
+        if (request.getPriority() != null) {
+            token.setPriority(request.getPriority());
+        }
+
         token.setStatus(TokenStatus.WAITING);
         token.setMobileNumber(request.getMobileNumber());
 
@@ -50,12 +76,8 @@ public class TokenService {
             token.setCounterIds(request.getCounterIds());
         }
 
-        Token savedToken = tokenRepository.save(token);
+        Token savedToken = tokenRepository.saveAndFlush(token);
 
-        // Update waiting count for the service
-        tokenRepository.countByServiceIdAndStatus(service.getId(), TokenStatus.WAITING);
-
-        // ✅ FIXED — notify each counter using AgentService method
         if (request.getCounterIds() != null) {
             for (String counterId : request.getCounterIds()) {
                 agentService.notifyAgentUpcoming(counterId);
@@ -72,7 +94,14 @@ public class TokenService {
     }
 
     private String generateTokenNumber(Branch branch) {
-        Optional<Integer> lastNumber = tokenRepository.findLastTokenNumber(branch.getId());
+        LocalDate today = LocalDate.now();
+
+        Optional<Integer> lastNumber = tokenRepository.findLastTokenNumberForToday(
+                branch.getId(),
+                today.atStartOfDay(),
+                today.plusDays(1).atStartOfDay()
+        );
+
         int nextNumber = lastNumber.orElse(1000) + 1;
         return String.valueOf(nextNumber);
     }

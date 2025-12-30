@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -45,8 +46,6 @@ public interface TokenRepository extends JpaRepository<Token, String> {
 
     Optional<Token> findFirstByAssignedCounterIdAndStatus(String assignedCounterId, TokenStatus status);
 
-    long countByServiceIdAndStatus(String serviceId, TokenStatus status);
-
     @Query("""
             SELECT t FROM Token t
             WHERE t.branchId = :branchId
@@ -58,7 +57,8 @@ public interface TokenRepository extends JpaRepository<Token, String> {
 
     @Query(value = """
                 SELECT t FROM Token t
-                WHERE t.status = com.gis.servelq.models.TokenStatus.WAITING
+                WHERE (t.status = com.gis.servelq.models.TokenStatus.WAITING
+                       OR t.status = com.gis.servelq.models.TokenStatus.HOLD)
                   AND (
                         t.counterIds IS NULL
                         OR t.counterIds = ''
@@ -74,12 +74,16 @@ public interface TokenRepository extends JpaRepository<Token, String> {
             """)
     List<Token> findUpcomingTokensForCounter(@Param("counterId") String counterId);
 
-    @Query("""
-                SELECT MAX(CAST(t.token AS integer))
-                FROM Token t
-                WHERE t.branchId = :branchId
-            """)
-    Optional<Integer> findLastTokenNumber(@Param("branchId") String branchId);
+    @Query("SELECT MAX(CAST(t.token AS int)) " +
+           "FROM Token t " +
+           "WHERE t.branchId = :branchId " +
+           "AND t.createdAt >= :startOfDay " +
+           "AND t.createdAt < :startOfNextDay")
+    Optional<Integer> findLastTokenNumberForToday(
+            @Param("branchId") String branchId,
+            @Param("startOfDay") LocalDateTime startOfDay,
+            @Param("startOfNextDay") LocalDateTime startOfNextDay
+    );
 
     @Query("""
                SELECT AVG(TIMESTAMPDIFF(SECOND, t.startAt, t.endAt))

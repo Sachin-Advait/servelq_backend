@@ -18,9 +18,15 @@ import java.util.List;
 public class AgentController {
     private final AgentService agentService;
 
-    @PostMapping("/counter/call-next/{counterId}")
+    @PostMapping("/call-next-token/{counterId}")
     public ResponseEntity<AgentCallResponseDTO> callNextToken(@PathVariable String counterId) {
         AgentCallResponseDTO response = agentService.callNextToken(counterId);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/call-hold-token/{tokenId}")
+    public ResponseEntity<AgentCallResponseDTO> callHoldToken(@PathVariable String tokenId) {
+        AgentCallResponseDTO response = agentService.callHoldToken(tokenId);
         return ResponseEntity.ok(response);
     }
 
@@ -36,7 +42,7 @@ public class AgentController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/counter/queue/{counterId}")
+    @GetMapping("/queue/{counterId}")
     public ResponseEntity<?> getCounterQueue(@PathVariable String counterId) {
         var tokens = agentService.getUpcomingTokensForCounter(counterId);
         return ResponseEntity.ok(tokens);
@@ -49,23 +55,27 @@ public class AgentController {
         return ResponseEntity.ok(recentServices);
     }
 
-    @PostMapping("/recall")
-    public ResponseEntity<AgentCallResponseDTO> recallToken(
-            @RequestParam String tokenId
-    ) {
+    @PostMapping("/token/recall/{tokenId}")
+    public ResponseEntity<AgentCallResponseDTO> recallToken(@PathVariable String tokenId) {
         AgentCallResponseDTO response = agentService.recallToken(tokenId);
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/counter/active-token/{counterId}")
+    @GetMapping("/active-token/{counterId}")
     public ResponseEntity<AgentCallResponseDTO> getActiveToken(@PathVariable String counterId) {
         AgentCallResponseDTO dto = agentService.getServingOrCallingTokenByCounter(counterId);
         return ResponseEntity.ok(dto);
     }
 
-    @PostMapping("/transfer")
+    @PostMapping("/token/transfer")
     public ResponseEntity<TokenResponseDTO> transferToken(@RequestBody TokenTransferRequest request) {
         Token token = agentService.transferToken(request);
+        return ResponseEntity.ok(TokenResponseDTO.fromEntity(token));
+    }
+
+    @PostMapping("/hold-token/{tokenId}")
+    public ResponseEntity<TokenResponseDTO> holdToken(@PathVariable String tokenId) {
+        Token token = agentService.holdToken(tokenId);
         return ResponseEntity.ok(TokenResponseDTO.fromEntity(token));
     }
 }

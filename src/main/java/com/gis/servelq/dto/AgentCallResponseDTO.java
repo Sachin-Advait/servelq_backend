@@ -1,6 +1,7 @@
 package com.gis.servelq.dto;
 
 
+import com.gis.servelq.models.Token;
 import lombok.Data;
 
 @Data
@@ -9,7 +10,13 @@ public class AgentCallResponseDTO {
     private String token;
     private String serviceName;
     private String mobileNumber;
-    private String counterId;
-    private String counterName;
-    private Integer waitingCount;
+
+    public static AgentCallResponseDTO fromEntity(Token token) {
+        AgentCallResponseDTO response = new AgentCallResponseDTO();
+        response.setTokenId(token.getId());
+        response.setToken(token.getToken());
+        response.setServiceName(token.getServiceName());
+        response.setMobileNumber(token.getMobileNumber());
+        return response;
+    }
 }
