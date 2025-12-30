@@ -37,11 +37,6 @@ public class FeedbackService {
         counterRepository.save(counter);
 
         agentService.notifyAgentUpcoming(counter.getId());
-        Counter counterResponseDTO = counterRepository.findById(counter.getId())
-                .orElseThrow();
-
-        socketService.broadcast("/topic/counter/" + counter.getId(), counterResponseDTO);
-
         return feedbackRepository.save(feedback);
     }
 
