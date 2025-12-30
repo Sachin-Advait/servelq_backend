@@ -23,20 +23,20 @@ public class TVDisplayService {
         Branch branch = branchRepository.findByIdAndEnabledTrue(branchId)
                 .orElseThrow(() -> new RuntimeException("Branch not found or disabled"));
 
-        // Get latest called tokens (last 4)
         List<Token> latestCalled = tokenRepository.findLatestCalledTokens(branchId)
                 .stream().limit(4).toList();
 
-        // Get currently serving tokens
         List<Token> nowServing = tokenRepository.findByBranchIdAndStatusOrderByPriorityAscCreatedAtAsc(
                 branchId, TokenStatus.SERVING);
 
-        // Get upcoming tokens
         List<Token> upcoming = tokenRepository.findByBranchIdAndStatusOrderByPriorityAscCreatedAtAsc(
                         branchId, TokenStatus.WAITING)
                 .stream().limit(10).toList();
 
-        // ✔ NEW — statistics
+        List<Token> hold = tokenRepository.findByBranchIdAndStatusOrderByPriorityAscCreatedAtAsc(
+                        branchId, TokenStatus.HOLD)
+                .stream().limit(10).toList();
+
         long waitingCount = tokenRepository.countByBranchIdAndStatus(branchId, TokenStatus.WAITING);
         long servingCount = tokenRepository.countByBranchIdAndStatus(branchId, TokenStatus.SERVING);
         long noShowCount = tokenRepository.countByBranchIdAndStatus(branchId, TokenStatus.NO_SHOW);
@@ -45,7 +45,6 @@ public class TVDisplayService {
         TVDisplayResponseDTO response = new TVDisplayResponseDTO();
         response.setBranchName(branch.getName());
 
-        // latest calls
         response.setLatestCalls(latestCalled.stream().map(token -> {
             TVDisplayResponseDTO.DisplayToken dt = new TVDisplayResponseDTO.DisplayToken();
             dt.setToken(token.getToken());
@@ -54,7 +53,6 @@ public class TVDisplayService {
             return dt;
         }).collect(Collectors.toList()));
 
-        // serving list with counter + service
         response.setNowServing(nowServing.stream().map(token -> {
             TVDisplayResponseDTO.DisplayToken dt = new TVDisplayResponseDTO.DisplayToken();
             dt.setToken(token.getToken());
@@ -63,12 +61,14 @@ public class TVDisplayService {
             return dt;
         }).collect(Collectors.toList()));
 
-        // upcoming only tokens
         response.setUpcomingTokens(upcoming.stream()
                 .map(Token::getToken)
                 .collect(Collectors.toList()));
 
-        // ✔ NEW — set statistics
+        response.setHoldTokens(hold.stream()
+                .map(Token::getToken)
+                .collect(Collectors.toList()));
+
         response.setWaiting(waitingCount);
         response.setServing(servingCount);
         response.setNoShow(noShowCount);

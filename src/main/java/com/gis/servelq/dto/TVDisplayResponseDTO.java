@@ -9,6 +9,7 @@ public class TVDisplayResponseDTO {
     private List<DisplayToken> latestCalls;
     private List<DisplayToken> nowServing;
     private List<String> upcomingTokens;
+    private List<String> holdTokens;
     private String branchName;
 
     private long waiting;
