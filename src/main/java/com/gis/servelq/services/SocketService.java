@@ -1,10 +1,13 @@
 package com.gis.servelq.services;
 
 import com.gis.servelq.dto.TVDisplayResponseDTO;
+import com.gis.servelq.models.TvContent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @Slf4j
@@ -23,5 +26,9 @@ public class SocketService {
     public void tvSocket(String branchId) {
         TVDisplayResponseDTO data = tvDisplayService.getTVDisplayData(branchId);
         broadcast("/topic/tv/" + branchId, data);
+    }
+
+    public void tvMediaSocket(List<TvContent> data, String branchId) {
+        broadcast("/topic/tv-media/" + branchId, data);
     }
 }

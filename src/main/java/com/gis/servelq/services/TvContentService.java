@@ -63,7 +63,8 @@ public class TvContentService {
         TvContent selected = tvContentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Content not found"));
         selected.setActive(true);
-        socketService.tvSocket(branchId);
+        List<TvContent> data = getByBranch(branchId);
+        socketService.tvMediaSocket(data, branchId);
         return tvContentRepository.save(selected);
     }
 
