@@ -140,15 +140,13 @@ public class AgentService {
 
     public List<RecentServiceDTO> getRecentServices(String counterId) {
         return tokenRepository.findTop20ByStatusAndAssignedCounterIdOrderByEndAtDesc(TokenStatus.DONE, counterId)
-                .stream()
-                .map(token -> RecentServiceDTO.fromEntity(
+                .stream().map(token -> RecentServiceDTO.fromEntity(
                         token.getToken(),
                         token.getMobileNumber(),
                         token.getServiceName(),
                         token.getStartAt(),
                         token.getEndAt()
-                ))
-                .collect(Collectors.toList());
+                )).collect(Collectors.toList());
     }
 
     @Transactional

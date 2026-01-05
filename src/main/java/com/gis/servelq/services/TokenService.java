@@ -73,15 +73,12 @@ public class TokenService {
 
         token.setStatus(TokenStatus.WAITING);
         token.setMobileNumber(request.getMobileNumber());
-
-        if (request.getCounterIds() != null) {
-            token.setCounterIds(request.getCounterIds());
-        }
+        token.setCounterIds(service.getCounterIds());
 
         Token savedToken = tokenRepository.saveAndFlush(token);
 
-        if (request.getCounterIds() != null) {
-            for (String counterId : request.getCounterIds()) {
+        if (service.getCounterIds() != null) {
+            for (String counterId : service.getCounterIds()) {
                 agentService.notifyBothAgentAndDisplay(counterId);
             }
         }

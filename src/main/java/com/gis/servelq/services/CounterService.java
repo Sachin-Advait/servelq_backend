@@ -96,7 +96,7 @@ public class CounterService {
 
     // Get counters by branch
     public List<CounterResponseDTO> getCountersByBranch(String branchId) {
-        return counterRepository.findByBranchId(branchId).stream().map(this::convertToResponse)
+        return counterRepository.findByBranchIdOrderByCreatedAtAsc(branchId).stream().map(this::convertToResponse)
                 .collect(Collectors.toList());
     }
 
