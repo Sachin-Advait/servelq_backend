@@ -4,13 +4,17 @@ import com.gis.servelq.dto.CounterRequest;
 import com.gis.servelq.dto.CounterResponseDTO;
 import com.gis.servelq.dto.CounterStatusResponseDTO;
 import com.gis.servelq.dto.CounterUpdateRequest;
-import com.gis.servelq.models.*;
+import com.gis.servelq.models.Counter;
+import com.gis.servelq.models.CounterStatus;
+import com.gis.servelq.models.TokenStatus;
+import com.gis.servelq.models.User;
 import com.gis.servelq.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,11 +36,8 @@ public class CounterService {
         counter.setEnabled(request.getEnabled() != null ? request.getEnabled() : true);
         counter.setPaused(request.getPaused() != null ? request.getPaused() : false);
         counter.setStatus(request.getStatus());
-
-        // Assign services as List<String>
         counter.setServiceId(request.getServiceId());
 
-        // Assign user if provided
         if (request.getUserId() != null) {
             counter.setUserId(request.getUserId());
         }
@@ -53,22 +54,18 @@ public class CounterService {
     }
 
     private CounterResponseDTO convertToResponse(Counter counter) {
-        Branch branch = branchRepository.findById(counter.getBranchId())
+        branchRepository.findById(counter.getBranchId())
                 .orElseThrow(() -> new RuntimeException("Branch not found"));
 
-        String username = null;
-        if (counter.getUserId() != null) {
-            username = userRepository.findById(counter.getUserId())
-                    .map(User::getName)
-                    .orElse(null);
-        }
-        Services service = null;
-        if (counter.getServiceId() != null) {
-            service = serviceRepository.findById(counter.getServiceId()).orElse(null);
-        }
+        serviceRepository.findById(counter.getServiceId())
+                .orElseThrow(() -> new RuntimeException("Service not found"));
+
+        String username = userRepository.findById(counter.getUserId())
+                .map(User::getName)
+                .orElse(null);
 
         Double avgSeconds = getAverageServiceTimeMinutesByCounter(counter.getId());
-        return CounterResponseDTO.fromEntity(counter, branch, username, service, avgSeconds);
+        return CounterResponseDTO.fromEntity(counter, username, avgSeconds);
     }
 
     // Create a new counter
@@ -82,24 +79,24 @@ public class CounterService {
                 .orElseThrow(() -> new RuntimeException("Branch not found with id: " + request.getBranchId()));
 
         Counter counter = getCounter(request);
-
         Counter saved = counterRepository.save(counter);
+
+        User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setCounterId(saved.getId());
+        userRepository.save(user);
+
         return convertToResponse(saved);
     }
 
     // Get all counters
     public List<CounterResponseDTO> getAllCounters() {
-        return counterRepository.findAll()
-                .stream()
-                .map(this::convertToResponse)
-                .collect(Collectors.toList());
+        return counterRepository.findAll().stream().map(this::convertToResponse).collect(Collectors.toList());
     }
 
     // Get counters by branch
     public List<CounterResponseDTO> getCountersByBranch(String branchId) {
-        return counterRepository.findByBranchId(branchId)
-                .stream()
-                .map(this::convertToResponse)
+        return counterRepository.findByBranchId(branchId).stream().map(this::convertToResponse)
                 .collect(Collectors.toList());
     }
 
@@ -127,7 +124,6 @@ public class CounterService {
         if (request.getEnabled() != null) counter.setEnabled(request.getEnabled());
         if (request.getPaused() != null) counter.setPaused(request.getPaused());
         if (request.getStatus() != null) counter.setStatus(request.getStatus());
-        if (request.getUserId() != null) counter.setUserId(request.getUserId());
 
         if (request.getBranchId() != null && !request.getBranchId().equals(counter.getBranchId())) {
             branchRepository.findById(request.getBranchId())
@@ -135,6 +131,14 @@ public class CounterService {
             counter.setBranchId(request.getBranchId());
         }
         if (request.getServiceId() != null) counter.setServiceId(request.getServiceId());
+        if (request.getUserId() != null && !Objects.equals(counter.getUserId(), request.getUserId())) {
+            counter.setUserId(request.getUserId());
+
+            User user = userRepository.findById(request.getUserId())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            user.setCounterId(counterId);
+            userRepository.save(user);
+        }
 
         Counter updated = counterRepository.save(counter);
         notifyCounter(counterId);
@@ -169,8 +173,11 @@ public class CounterService {
     // Delete counter
     @Transactional
     public void deleteCounter(String counterId) {
-        if (!counterRepository.existsById(counterId)) {
-            throw new RuntimeException("Counter not found");
+        Counter counter = counterRepository.findById(counterId)
+                .orElseThrow(() -> new RuntimeException("Counter not found"));
+
+        if (counter.getUserId() != null && !counter.getUserId().isBlank()) {
+            userRepository.findById(counter.getUserId()).ifPresent(user -> user.setCounterId(null));
         }
         counterRepository.deleteById(counterId);
     }
@@ -191,12 +198,10 @@ public class CounterService {
         // Fetch currently serving token
         if (counter.getStatus() == CounterStatus.SERVING || counter.getStatus() == CounterStatus.CALLING ||
                 counter.getStatus() == CounterStatus.COMPLETE) {
-            var token = tokenRepository
-                    .findByStatusInAndAssignedCounterId(
-                            List.of(TokenStatus.SERVING, TokenStatus.CALLING, TokenStatus.REVIEW),
-                            counterId
-                    )
-                    .orElse(null);
+            var token = tokenRepository.findByStatusInAndAssignedCounterId(
+                    List.of(TokenStatus.SERVING, TokenStatus.CALLING, TokenStatus.REVIEW),
+                    counterId
+            ).orElse(null);
 
             if (token != null) {
                 response.setTokenId(token.getId());

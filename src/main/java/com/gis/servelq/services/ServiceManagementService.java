@@ -80,9 +80,9 @@ public class ServiceManagementService {
                 .stream().map(ServiceResponseDTO::fromEntity).collect(Collectors.toList());
     }
 
-    // READ: All
+    // READ: ADMIN API
     public List<ServiceResponseDTO> getAllServices(String branchId) {
-        return serviceRepository.findByBranchIdAndEnabledTrue(branchId)
+        return serviceRepository.findByBranchId(branchId)
                 .stream().map(ServiceResponseDTO::fromEntity).collect(Collectors.toList());
     }
 

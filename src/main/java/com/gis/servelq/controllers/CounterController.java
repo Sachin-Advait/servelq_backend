@@ -47,9 +47,7 @@ public class CounterController {
     }
 
     @PutMapping("/{counterId}")
-    public ResponseEntity<?> updateCounter(
-            @PathVariable String counterId,
-            @RequestBody CounterUpdateRequest request) {
+    public ResponseEntity<?> updateCounter(@PathVariable String counterId, @RequestBody CounterUpdateRequest request) {
         try {
             CounterResponseDTO counter = counterService.updateCounter(counterId, request);
             return ResponseEntity.ok(counter);
@@ -70,9 +68,7 @@ public class CounterController {
     }
 
     @PatchMapping("/enabled/{counterId}/{value}")
-    public ResponseEntity<?> toggleEnabled(
-            @PathVariable String counterId,
-            @PathVariable boolean value) {
+    public ResponseEntity<?> toggleEnabled(@PathVariable String counterId, @PathVariable boolean value) {
         try {
             CounterResponseDTO counter = counterService.toggleCounter(counterId, value);
             return ResponseEntity.ok(counter);
@@ -82,9 +78,7 @@ public class CounterController {
     }
 
     @PatchMapping("/paused/{counterId}/{value}")
-    public ResponseEntity<?> togglePaused(
-            @PathVariable String counterId,
-            @PathVariable boolean value) {
+    public ResponseEntity<?> togglePaused(@PathVariable String counterId, @PathVariable boolean value) {
         try {
             CounterResponseDTO counter = counterService.togglePauseCounter(counterId, value);
             return ResponseEntity.ok(counter);

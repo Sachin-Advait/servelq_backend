@@ -12,17 +12,17 @@ import java.util.Optional;
 @Repository
 public interface ServiceRepository extends JpaRepository<Services, String> {
 
-    List<Services> findByBranchIdAndEnabledTrue(String branchId);
+    List<Services> findByBranchId(String branchId);
 
     List<Services> findByParentIdAndEnabledTrue(String parentId);
 
     Optional<Services> findByCodeAndBranchId(String code, String branchId);
 
     @Query("""
-        SELECT s FROM Services s 
-        WHERE s.branchId = :branchId 
-          AND s.enabled = true
-          AND (s.parentId IS NULL OR s.parentId = '')
-    """)
+                SELECT s FROM Services s
+                WHERE s.branchId = :branchId
+                  AND s.enabled = true
+                  AND (s.parentId IS NULL OR s.parentId = '')
+            """)
     List<Services> findMainServicesByBranchId(@Param("branchId") String branchId);
 }

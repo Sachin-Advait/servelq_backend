@@ -1,10 +1,8 @@
 package com.gis.servelq.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.gis.servelq.models.Branch;
 import com.gis.servelq.models.Counter;
 import com.gis.servelq.models.CounterStatus;
-import com.gis.servelq.models.Services;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -16,25 +14,19 @@ public class CounterResponseDTO {
     private String id;
     private String code;
     private String name;
-    private BranchResponseDTO branch;
+    private String branchId;
     private Boolean enabled;
     private Boolean paused;
     private CounterStatus status;
     private String userId;
     private String username;
-    private ServiceResponseDTO service;
+    private String serviceId;
     private Double avgSeconds;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     // ----------- STATIC FACTORY METHOD -------------
-    public static CounterResponseDTO fromEntity(
-            Counter counter,
-            Branch branch,
-            String username,
-            Services service,
-            Double avgSeconds
-    ) {
+    public static CounterResponseDTO fromEntity(Counter counter, String username, Double avgSeconds) {
         CounterResponseDTO dto = new CounterResponseDTO();
 
         dto.setId(counter.getId());
@@ -48,14 +40,8 @@ public class CounterResponseDTO {
         dto.setAvgSeconds(avgSeconds);
         dto.setCreatedAt(counter.getCreatedAt());
         dto.setUpdatedAt(counter.getUpdatedAt());
-
-        // branch
-        dto.setBranch(BranchResponseDTO.fromEntity(branch));
-
-        // service (if exists)
-        if (service != null) {
-            dto.setService(ServiceResponseDTO.fromEntity(service));
-        }
+        dto.setBranchId(counter.getBranchId());
+        dto.setServiceId(counter.getServiceId());
 
         return dto;
     }

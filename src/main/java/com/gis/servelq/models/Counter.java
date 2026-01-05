@@ -30,9 +30,11 @@ public class Counter {
     @NotNull
     private Boolean paused = false;
 
+    @NotNull
     @Column(name = "branch_id")
     private String branchId;
 
+    @NotNull
     @Column(name = "user_id")
     private String userId;
 
