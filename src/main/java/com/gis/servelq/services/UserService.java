@@ -1,6 +1,7 @@
 package com.gis.servelq.services;
 
 import com.gis.servelq.dto.RegisterRequest;
+import com.gis.servelq.models.KioskCategory;
 import com.gis.servelq.models.User;
 import com.gis.servelq.models.UserRole;
 import com.gis.servelq.repository.UserRepository;
@@ -30,6 +31,9 @@ public class UserService {
         user.setRole(dto.getRole());
         user.setBranchId(dto.getBranchId());
         user.setCounterId(dto.getCounterId());
+        if (user.getRole() == UserRole.KIOSK)
+            user.setCategory(dto.getCategory() == null ? KioskCategory.GENERAL : dto.getCategory());
+
         return userRepository.save(user);
     }
 
@@ -58,6 +62,8 @@ public class UserService {
             if (userDetails.getRole() != null) user.setRole(userDetails.getRole());
             if (userDetails.getBranchId() != null) user.setBranchId(userDetails.getBranchId());
             if (userDetails.getCounterId() != null) user.setCounterId(userDetails.getCounterId());
+            if (userDetails.getCategory() != null) user.setCategory(userDetails.getCategory());
+
             return userRepository.save(user);
         }).orElseThrow(() -> new RuntimeException("User not found"));
     }

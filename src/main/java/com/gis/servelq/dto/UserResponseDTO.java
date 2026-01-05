@@ -1,5 +1,6 @@
 package com.gis.servelq.dto;
 
+import com.gis.servelq.models.KioskCategory;
 import com.gis.servelq.models.User;
 import com.gis.servelq.models.UserRole;
 import lombok.Data;
@@ -12,6 +13,7 @@ public class UserResponseDTO {
     private String name;
     private String email;
     private UserRole role;
+    private KioskCategory category;
     private String branchId;
     private String counterId;
     private LocalDateTime createdAt;
@@ -24,6 +26,7 @@ public class UserResponseDTO {
         this.role = user.getRole();
         this.branchId = user.getBranchId();
         if (user.getCounterId() != null) this.counterId = user.getCounterId();
+        if (user.getCategory() != null) this.category = user.getCategory();
         this.createdAt = user.getCreatedAt();
         this.updatedAt = user.getUpdatedAt();
     }

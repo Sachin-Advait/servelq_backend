@@ -28,6 +28,10 @@ public class User {
     @NotNull
     private UserRole role = UserRole.USER;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "category")
+    private KioskCategory category;
+
     @Column(name = "branch_id")
     private String branchId;
 
