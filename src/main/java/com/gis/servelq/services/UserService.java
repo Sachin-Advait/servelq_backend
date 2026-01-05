@@ -4,18 +4,18 @@ import com.gis.servelq.dto.RegisterRequest;
 import com.gis.servelq.models.User;
 import com.gis.servelq.models.UserRole;
 import com.gis.servelq.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import lombok.AllArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@AllArgsConstructor
 public class UserService {
 
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-    @Autowired
+    private final PasswordEncoder passwordEncoder;
     private UserRepository userRepository;
 
     public User registerUser(RegisterRequest dto) {

@@ -6,6 +6,7 @@ import com.gis.servelq.dto.UserResponseDTO;
 import com.gis.servelq.models.User;
 import com.gis.servelq.services.UserService;
 import lombok.AllArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 @AllArgsConstructor
 public class AuthController {
 
+    private final PasswordEncoder passwordEncoder;
     private UserService userService;
 
     @PostMapping("/register")
@@ -29,7 +31,7 @@ public class AuthController {
         User user = userService.findByEmail(dto.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (!dto.getPassword().matches(user.getPassword())) {
+        if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
             throw new RuntimeException("Invalid password");
         }
 
