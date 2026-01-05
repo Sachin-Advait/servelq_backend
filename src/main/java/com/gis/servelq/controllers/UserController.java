@@ -1,5 +1,6 @@
 package com.gis.servelq.controllers;
 
+import com.gis.servelq.dto.UserResponseDTO;
 import com.gis.servelq.models.User;
 import com.gis.servelq.models.UserRole;
 import com.gis.servelq.services.UserService;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/serveiq/api/users")
@@ -18,36 +20,37 @@ public class UserController {
     private UserService userService;
 
     @GetMapping
-    public List<User> getAllUsers() {
-        return userService.getAllUsers();
+    public List<UserResponseDTO> getAllUsers() {
+        return userService.getAllUsers().stream().map(UserResponseDTO::new).collect(Collectors.toList());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable String id) {
+    public ResponseEntity<UserResponseDTO> getUserById(@PathVariable String id) {
         Optional<User> user = userService.getUser(id);
-        return user.map(ResponseEntity::ok)
+        return user.map(u -> ResponseEntity.ok(new UserResponseDTO(u)))
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable String id, @RequestBody User user) {
-        System.out.println(user.getRole());
+    public ResponseEntity<UserResponseDTO> updateUser(@PathVariable String id, @RequestBody User user) {
         User updatedUser = userService.updateUser(id, user);
         if (updatedUser != null) {
-            return ResponseEntity.ok(updatedUser);
+            return ResponseEntity.ok(new UserResponseDTO(updatedUser));
         }
         return ResponseEntity.notFound().build();
-
     }
 
     @DeleteMapping("/{id}")
-    public String deleteUser(@PathVariable String id) {
+    public ResponseEntity<String> deleteUser(@PathVariable String id) {
         userService.deleteUser(id);
-        return "User deleted successfully";
+        return ResponseEntity.ok("User deleted successfully");
     }
+
     @GetMapping("/role/{role}")
-    public ResponseEntity<List<User>> getUsersByRole(@PathVariable UserRole role) {
-        List<User> users = userService.getUsersByRole(role);
-        return ResponseEntity.ok(users);
+    public ResponseEntity<List<UserResponseDTO>> getUsersByRole(@PathVariable UserRole role) {
+        List<UserResponseDTO> usersDto = userService.getUsersByRole(role).stream()
+                .map(UserResponseDTO::new)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(usersDto);
     }
 }

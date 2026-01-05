@@ -20,7 +20,7 @@ public class FeedbackService {
     private final CounterRepository counterRepository;
     private final TokenRepository tokenRepository;
     private final AgentService agentService;
-    private final SocketService socketService;
+    private final CounterService counterService;
 
     @Transactional
     public Feedback createFeedback(Feedback feedback) {
@@ -36,7 +36,9 @@ public class FeedbackService {
         counter.setStatus(CounterStatus.IDLE);
         counterRepository.save(counter);
 
-        agentService.notifyAgentUpcoming(counter.getId());
+        agentService.notifyCounterDisplay(counter.getId());
+        counterService.notifyCounter(counter.getId());
+
         return feedbackRepository.save(feedback);
     }
 

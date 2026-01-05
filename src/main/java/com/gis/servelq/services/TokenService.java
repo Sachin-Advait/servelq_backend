@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -39,7 +38,6 @@ public class TokenService {
                 if (++attempts >= maxAttempts) {
                     throw new RuntimeException("Failed to generate token after " + maxAttempts + " attempts", e);
                 }
-                // Optional: small delay between retries to reduce collision
                 try {
                     Thread.sleep(50);
                 } catch (InterruptedException ie) {
@@ -50,24 +48,28 @@ public class TokenService {
         }
     }
 
+    public Token getTokenById(String tokenId) {
+        return tokenRepository.findById(tokenId).orElseThrow(() -> new RuntimeException("Token not found"));
+    }
+
     private TokenResponseDTO createTokenOnce(TokenRequest request) {
+
         Services service = serviceRepository.findById(request.getServiceId())
                 .orElseThrow(() -> new RuntimeException("Service not found"));
 
         Branch branch = branchRepository.findById(request.getBranchId())
                 .orElseThrow(() -> new RuntimeException("Branch not found"));
 
-        String tokenNumber = generateTokenNumber(branch);
+        TokenNumber tokenNumber = generateToken(branch, service.getCode(), request.getPriority());
 
         Token token = new Token();
-        token.setToken(tokenNumber);
+        token.setToken(tokenNumber.token());
+        token.setTokenSeq(tokenNumber.seq());
+        token.setPriority(tokenNumber.priority());
+
         token.setBranchId(branch.getId());
         token.setServiceId(service.getId());
         token.setServiceName(service.getName());
-
-        if (request.getPriority() != null) {
-            token.setPriority(request.getPriority());
-        }
 
         token.setStatus(TokenStatus.WAITING);
         token.setMobileNumber(request.getMobileNumber());
@@ -80,29 +82,40 @@ public class TokenService {
 
         if (request.getCounterIds() != null) {
             for (String counterId : request.getCounterIds()) {
-                agentService.notifyAgentUpcoming(counterId);
+                agentService.notifyBothAgentAndDisplay(counterId);
             }
         }
 
-        socketService.tvSocket(request.getBranchId());
+        socketService.tvSocket(branch.getId());
         return TokenResponseDTO.fromEntity(savedToken);
     }
 
-    public Token getTokenById(String tokenId) {
-        return tokenRepository.findById(tokenId)
-                .orElseThrow(() -> new RuntimeException("Token not found"));
-    }
-
-    private String generateTokenNumber(Branch branch) {
+    private TokenNumber generateToken(Branch branch, String serviceCode, Integer requestPriority) {
         LocalDate today = LocalDate.now();
 
-        Optional<Integer> lastNumber = tokenRepository.findLastTokenNumberForToday(
+        int priority = requestPriority != null ? requestPriority : 50;
+
+        int nextSeq = tokenRepository.findLastSeqForPriorityToday(
                 branch.getId(),
+                priority,
                 today.atStartOfDay(),
                 today.plusDays(1).atStartOfDay()
-        );
+        ).orElse(0) + 1;
 
-        int nextNumber = lastNumber.orElse(1000) + 1;
-        return String.valueOf(nextNumber);
+        String prefix = resolveTokenPrefix(serviceCode, priority);
+        String token = prefix + String.format("%03d", nextSeq);
+
+        return new TokenNumber(token, nextSeq, priority);
+    }
+
+    private String resolveTokenPrefix(String serviceCode, int priority) {
+        return switch (priority) {
+            case 100 -> "V";
+            case 75 -> "P";
+            default -> serviceCode.trim().toUpperCase();
+        };
+    }
+
+    private record TokenNumber(String token, int seq, int priority) {
     }
 }

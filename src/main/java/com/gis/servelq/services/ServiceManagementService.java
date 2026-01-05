@@ -87,18 +87,11 @@ public class ServiceManagementService {
     }
 
     public Services updateService(String id, ServiceUpdateRequest request) {
-
-        Services service = serviceRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Service not found"));
+        Services service = serviceRepository.findById(id).orElseThrow(() -> new RuntimeException("Service not found"));
 
         // Null-safe code uniqueness check
-        if (request.getCode() != null &&
-                !request.getCode().equals(service.getCode())) {
-
-            serviceRepository.findByCodeAndBranchId(
-                    request.getCode(),
-                    request.getBranchId()
-            ).ifPresent(s -> {
+        if (request.getCode() != null && !request.getCode().equals(service.getCode())) {
+            serviceRepository.findByCodeAndBranchId(request.getCode(), service.getBranchId()).ifPresent(s -> {
                 throw new RuntimeException("Service code already exists");
             });
 
@@ -118,8 +111,7 @@ public class ServiceManagementService {
 
     // SOFT DELETE
     public void disableService(String id) {
-        Services service = serviceRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Service not found"));
+        Services service = serviceRepository.findById(id).orElseThrow(() -> new RuntimeException("Service not found"));
         service.setEnabled(false);
         serviceRepository.save(service);
     }

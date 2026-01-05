@@ -21,6 +21,10 @@ public class Token {
     @NotBlank
     private String token;
 
+    @NotNull
+    @Column(name = "token_seq")
+    private Integer tokenSeq;
+
     @NotBlank
     @Column(name = "branch_id")
     private String branchId;

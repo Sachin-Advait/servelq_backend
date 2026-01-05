@@ -51,10 +51,7 @@ public class ServiceController {
 
     // UPDATE
     @PutMapping("/{id}")
-    public ResponseEntity<Services> updateService(
-            @PathVariable String id,
-            @RequestBody ServiceUpdateRequest request
-    ) {
+    public ResponseEntity<Services> updateService(@PathVariable String id, @RequestBody ServiceUpdateRequest request) {
         return ResponseEntity.ok(serviceManagementService.updateService(id, request));
     }
 

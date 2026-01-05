@@ -29,7 +29,7 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user.setRole(dto.getRole());
         user.setBranchId(dto.getBranchId());
-        user.setCounterId(dto.getCounterId()); // Also fixed duplicate setBranchId
+        user.setCounterId(dto.getCounterId());
         return userRepository.save(user);
     }
 

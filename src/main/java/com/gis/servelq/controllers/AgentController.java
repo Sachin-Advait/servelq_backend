@@ -78,4 +78,10 @@ public class AgentController {
         Token token = agentService.holdToken(tokenId);
         return ResponseEntity.ok(TokenResponseDTO.fromEntity(token));
     }
+
+    @PostMapping("/no-show-token/{tokenId}")
+    public ResponseEntity<TokenResponseDTO> noShow(@PathVariable String tokenId) {
+        Token token = agentService.noShow(tokenId);
+        return ResponseEntity.ok(TokenResponseDTO.fromEntity(token));
+    }
 }

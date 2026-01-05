@@ -74,16 +74,21 @@ public interface TokenRepository extends JpaRepository<Token, String> {
             """)
     List<Token> findUpcomingTokensForCounter(@Param("counterId") String counterId);
 
-    @Query("SELECT MAX(CAST(t.token AS int)) " +
-           "FROM Token t " +
-           "WHERE t.branchId = :branchId " +
-           "AND t.createdAt >= :startOfDay " +
-           "AND t.createdAt < :startOfNextDay")
-    Optional<Integer> findLastTokenNumberForToday(
+    @Query("""
+                SELECT MAX(t.tokenSeq)
+                FROM Token t
+                WHERE t.branchId = :branchId
+                  AND t.priority = :priority
+                  AND t.createdAt >= :startOfDay
+                  AND t.createdAt < :startOfNextDay
+            """)
+    Optional<Integer> findLastSeqForPriorityToday(
             @Param("branchId") String branchId,
+            @Param("priority") Integer priority,
             @Param("startOfDay") LocalDateTime startOfDay,
             @Param("startOfNextDay") LocalDateTime startOfNextDay
     );
+
 
     @Query("""
                SELECT AVG(TIMESTAMPDIFF(SECOND, t.startAt, t.endAt))

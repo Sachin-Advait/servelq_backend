@@ -137,7 +137,7 @@ public class CounterService {
         if (request.getServiceId() != null) counter.setServiceId(request.getServiceId());
 
         Counter updated = counterRepository.save(counter);
-        notifyCounterDisplay(counterId);
+        notifyCounter(counterId);
 
         return convertToResponse(updated);
     }
@@ -150,7 +150,7 @@ public class CounterService {
         counter.setEnabled(enabled);
         Counter saved = counterRepository.save(counter);
 
-        notifyCounterDisplay(counterId);
+        notifyCounter(counterId);
         return convertToResponse(saved);
     }
 
@@ -162,7 +162,7 @@ public class CounterService {
         counter.setPaused(paused);
         Counter saved = counterRepository.save(counter);
 
-        notifyCounterDisplay(counterId);
+        notifyCounter(counterId);
         return convertToResponse(saved);
     }
 
@@ -213,8 +213,8 @@ public class CounterService {
         return response;
     }
 
-    public void notifyCounterDisplay(String counterId) {
+    public void notifyCounter(String counterId) {
         CounterStatusResponseDTO data = getCounterStatusDetails(counterId);
-        socketService.broadcast("/topic/counter-display/" + counterId, data);
+        socketService.broadcast("/topic/counter/" + counterId, data);
     }
 }
