@@ -3,15 +3,22 @@ package com.gis.servelq.models;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.time.LocalDateTime;
 
+import java.time.LocalDateTime;
+@NoArgsConstructor          // ✅ THIS IS REQUIRED
+@AllArgsConstructor
 @Entity
 @Table(name = "users")
 @Data
+@Builder
+
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -45,5 +52,7 @@ public class User {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Builder.Default private String fcmToken = null;
 }
 
