@@ -24,7 +24,7 @@ public class WebSocketHeartbeatConfig {
         try {
             // Send to all branches - or make this dynamic based on active subscriptions
             messagingTemplate.convertAndSend("/topic/heartbeat", "PING");
-            log.debug("Heartbeat sent to TV displays");
+            log.debug("Heartbeat sent to Globally");
         } catch (Exception e) {
             log.error("Failed to send heartbeat", e);
         }
