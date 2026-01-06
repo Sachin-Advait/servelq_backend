@@ -23,6 +23,9 @@ public class Category {
     @NotBlank
     private String name;
 
+    @NotBlank
+    private String arabicName;
+
     @NotNull
     @Column(nullable = false, updatable = false)
     private Integer priority;

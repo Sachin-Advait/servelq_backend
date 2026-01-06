@@ -55,6 +55,10 @@ public class CategoryService {
             existingCategory.setName(updatedCategory.getName());
         }
 
+        if (updatedCategory.getArabicName() != null && !updatedCategory.getArabicName().isBlank()) {
+            existingCategory.setArabicName(updatedCategory.getArabicName());
+        }
+
         existingCategory.setUpdatedAt(LocalDateTime.now());
         return categoryRepository.save(existingCategory);
     }

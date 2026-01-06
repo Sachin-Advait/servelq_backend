@@ -6,4 +6,5 @@ import lombok.Data;
 public class CategoryUpdateRequest {
     private String code;
     private String name;
+    private String arabicName;
 }
