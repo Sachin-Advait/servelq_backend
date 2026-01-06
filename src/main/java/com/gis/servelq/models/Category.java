@@ -27,7 +27,7 @@ public class Category {
     private String arabicName;
 
     @NotNull
-    @Column(nullable = false, updatable = false)
+    @Column(nullable = false, unique = true, updatable = false)
     private Integer priority;
 
     @CreationTimestamp

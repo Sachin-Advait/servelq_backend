@@ -4,6 +4,7 @@ import com.gis.servelq.dto.CategoryUpdateRequest;
 import com.gis.servelq.models.Category;
 import com.gis.servelq.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,8 +26,9 @@ public class CategoryService {
         return categoryRepository.findById(id);
     }
 
-    public Optional<Category> findByCode(String code) {
-        return categoryRepository.findByCode(code);
+    @Cacheable("categoryByPriority")
+    public Optional<Category> findByPriority(Integer priority) {
+        return categoryRepository.findByPriority(priority);
     }
 
     public Category create(Category category) {

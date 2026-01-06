@@ -30,9 +30,9 @@ public class CategoryController {
         return categoryService.findById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/{code}")
-    public ResponseEntity<Category> getCategoryByCode(@PathVariable String code) {
-        return categoryService.findByCode(code).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+    @GetMapping("/priority/{priority}")
+    public ResponseEntity<Category> getCategoryByCode(@PathVariable Integer priority) {
+        return categoryService.findByPriority(priority).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping

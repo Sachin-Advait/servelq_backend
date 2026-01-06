@@ -25,6 +25,7 @@ public class TokenService {
     private final BranchRepository branchRepository;
     private final SocketService socketService;
     private final AgentService agentService;
+    private final CategoryService categoryService;
 
     @Transactional
     public TokenResponseDTO generateToken(TokenRequest request) {
@@ -106,11 +107,11 @@ public class TokenService {
     }
 
     private String resolveTokenPrefix(String serviceCode, int priority) {
-        return switch (priority) {
-            case 100 -> "V";
-            case 75 -> "P";
-            default -> serviceCode.trim().toUpperCase();
-        };
+        if (priority == 50) return serviceCode.trim().toUpperCase();
+
+        return categoryService.findByPriority(priority)
+                .map(category -> category.getCode().trim().toUpperCase())
+                .orElse(serviceCode.trim().toUpperCase());
     }
 
     private record TokenNumber(String token, int seq, int priority) {
