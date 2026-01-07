@@ -3,11 +3,13 @@ package com.gis.servelq.dto;
 import com.gis.servelq.models.KioskCategory;
 import com.gis.servelq.models.User;
 import com.gis.servelq.models.UserRole;
+import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDateTime;
 
 @Data
+
 public class UserResponseDTO {
     private String id;
     private String name;

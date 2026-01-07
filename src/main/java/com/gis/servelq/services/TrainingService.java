@@ -33,11 +33,11 @@ public class TrainingService {
     public TrainingMaterial uploadAndAssign(TrainingUploadAssignDTO request) {
 
         // ✅ BUILD material from FLAT DTO
+        System.out.println("MATERIAL->>>>>>>>>>>>>>>>" +request);
         TrainingMaterial material = TrainingMaterial.builder()
                 .title(request.getTitle())
                 .type(request.getType())
                 .duration(request.getDuration())
-                .region(request.getRegion().toLowerCase())
                 .cloudinaryPublicId(request.getCloudinaryPublicId())
                 .cloudinaryUrl(request.getCloudinaryUrl())
                 .cloudinaryResourceType(request.getCloudinaryResourceType())
@@ -85,12 +85,7 @@ public class TrainingService {
         return materialRepo.findAllByActiveTrue();
     }
 
-    public List<TrainingMaterial> getMaterialsByRegion(String region) {
-        if ("all".equalsIgnoreCase(region)) {
-            return materialRepo.findAllByActiveTrue();
-        }
-        return materialRepo.findByRegionAndActiveTrue(region);
-    }
+
 
     public void assignTraining(Long trainingId, List<String> userIds, Instant dueDate) {
 
@@ -237,7 +232,6 @@ public class TrainingService {
         if (request.getTitle() != null) material.setTitle(request.getTitle());
         if (request.getType() != null) material.setType(request.getType());
         if (request.getDuration() != null) material.setDuration(request.getDuration());
-        if (request.getRegion() != null) material.setRegion(request.getRegion().toLowerCase());
 
         if (request.getCloudinaryUrl() != null) {
             material.setCloudinaryUrl(request.getCloudinaryUrl());

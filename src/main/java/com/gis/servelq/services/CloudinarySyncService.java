@@ -132,7 +132,6 @@ public class CloudinarySyncService {
                 .title(extractTitle(publicId))
                 .type(resolveMaterialType(resourceType))
                 .duration("video".equals(resourceType) ? formatDuration(duration) : "N/A")
-                .region("all")
                 .assignedTo(0)
                 .completionRate(0)
                 .views(0)

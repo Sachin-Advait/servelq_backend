@@ -1,0 +1,253 @@
+package com.gis.servelq.services;
+
+import com.gis.servelq.dto.*;
+import com.gis.servelq.models.QuizSurveyModel;
+import com.gis.servelq.models.ResponseModel;
+import com.gis.servelq.models.User;
+import com.gis.servelq.repository.QuizSurveyRepository;
+import com.gis.servelq.repository.ResponseRepo;
+import com.gis.servelq.repository.UserRepository;
+import com.gis.servelq.utils.ScoringUtil;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+public class ResponseService {
+
+    private final QuizSurveyRepository quizSurveyRepo;
+    private final ResponseRepo responseRepo;
+    private final UserRepository userRepository;
+
+    /* =====================================================
+       SUBMIT RESPONSE
+       ===================================================== */
+
+    public ResponseModel storeResponse(UUID quizSurveyId, SurveySubmissionRequest request) {
+
+        User user =
+                userRepository.findById(request.getUserId())
+                        .orElseThrow(() -> new RuntimeException("Invalid userId"));
+
+        QuizSurveyModel quiz =
+                quizSurveyRepo.findById(quizSurveyId)
+                        .orElseThrow(() -> new IllegalArgumentException("Quiz or Survey not found"));
+
+        // Ensure user is targeted
+        if (quiz.getTargetedUsers() == null ||
+                !quiz.getTargetedUsers().contains(user.getId())) {
+            throw new IllegalArgumentException("User not allowed to submit this quiz/survey");
+        }
+
+        List<ResponseModel> existing =
+                responseRepo.findByQuizSurveyIdAndUserId(quizSurveyId, user.getId());
+
+        // Survey: allow only one submission
+        if ("survey".equalsIgnoreCase(quiz.getType()) && !existing.isEmpty()) {
+            throw new IllegalStateException("Survey already submitted");
+        }
+
+        // Quiz: respect max retake
+        if ("quiz".equalsIgnoreCase(quiz.getType())
+                && quiz.getMaxRetake() != null
+                && existing.size() >= quiz.getMaxRetake()) {
+            throw new IllegalStateException("Max quiz attempts exceeded");
+        }
+        if (quiz.getMaxRetake() != null) {
+            quiz.setMaxRetake(quiz.getMaxRetake() - 1);
+            quizSurveyRepo.save(quiz);
+        }
+        return switch (quiz.getType().toLowerCase()) {
+            case "quiz" -> handleQuizResponse(quiz, request, user);
+            case "survey" -> handleSurveyResponse(quiz, request, user);
+            default -> throw new IllegalArgumentException("Unsupported type");
+        };
+    }
+
+    /* =====================================================
+       QUIZ RESPONSE
+       ===================================================== */
+
+    private ResponseModel handleQuizResponse(
+            QuizSurveyModel quiz,
+            SurveySubmissionRequest request,
+            User user
+    ) {
+
+        Map<String, String> questionTypes = new HashMap<>();
+        Map<String, Integer> marks = new HashMap<>();
+
+        quiz.getDefinitionJson().getPages().forEach(page ->
+                page.getElements().forEach(el -> {
+                    questionTypes.put(el.getName(), el.getType());
+                    marks.put(el.getName(), el.getMarks() != null ? el.getMarks() : 1);
+                })
+        );
+
+        ScoringUtil.ScoringResult result =
+                ScoringUtil.score(
+                        request.getAnswers(),
+                        quiz.getAnswerKey(),
+                        questionTypes,
+                        marks
+                );
+
+        return responseRepo.save(
+                ResponseModel.builder()
+                        .quizSurveyId(quiz.getId())
+                        .userId(user.getId())
+                        .username(user.getName())
+                        .answers(request.getAnswers())
+                        .score(result.score())
+                        .maxScore(quiz.getMaxScore())
+                        .finishTimeMs(request.getFinishTime())
+                        .build()
+        );
+    }
+
+    /* =====================================================
+       SURVEY RESPONSE
+       ===================================================== */
+
+    private ResponseModel handleSurveyResponse(
+            QuizSurveyModel survey,
+            SurveySubmissionRequest request,
+            User user
+    ) {
+        return responseRepo.save(
+                ResponseModel.builder()
+                        .quizSurveyId(survey.getId())
+                        .userId(user.getId())
+                        .username(user.getName())
+                        .answers(request.getAnswers())
+                        .score(null)
+                        .maxScore(null)
+                        .finishTimeMs(request.getFinishTime())
+                        .build()
+        );
+    }
+
+    /* =====================================================
+       USER RESPONSES
+       ===================================================== */
+
+    public List<ResponseModel> getAllResponsesByUserId(String userId) {
+        return responseRepo.findByUserId(userId);
+    }
+
+    /* =====================================================
+       STAFF INVITED
+       ===================================================== */
+
+    public List<UserResponseDTO> totalStaffInvited(UUID quizSurveyId) {
+
+        QuizSurveyModel quiz =
+                quizSurveyRepo.findById(quizSurveyId)
+                        .orElseThrow(() -> new IllegalArgumentException("Quiz not found"));
+
+        return userRepository.findAllById(quiz.getTargetedUsers())
+                .stream()
+                .map(UserResponseDTO::new)
+                .toList();
+    }
+
+
+    /* =====================================================
+       RESPONSES RECEIVED
+       ===================================================== */
+
+    public List<ResponseReceivedDTO> totalResponseReceived(UUID quizSurveyId) {
+
+        QuizSurveyModel quiz =
+                quizSurveyRepo.findById(quizSurveyId)
+                        .orElseThrow(() -> new IllegalArgumentException("Quiz not found"));
+
+        Set<String> visibleFields = quiz.getUserDataDisplayFields();
+
+        List<ResponseModel> responses =
+                responseRepo.findByQuizSurveyId(quizSurveyId);
+
+        Map<String, ResponseModel> bestAttempt =
+                responses.stream()
+                        .filter(r -> r.getScore() != null)
+                        .collect(Collectors.toMap(
+                                ResponseModel::getUserId,
+                                r -> r,
+                                (a, b) -> a.getScore() >= b.getScore() ? a : b
+                        ));
+
+        return bestAttempt.values()
+                .stream()
+                .map(r -> {
+                    User user =
+                            userRepository.findById(r.getUserId()).orElse(null);
+
+                    if (user == null) return null;
+
+                    String result =
+                            r.getScore() >= (0.5 * r.getMaxScore())
+                                    ? "PASS"
+                                    : "FAIL";
+
+                    ResponseReceivedDTO.ResponseReceivedDTOBuilder b =
+                            ResponseReceivedDTO.builder()
+                                    .id(user.getId())
+                                    .result(result)
+                                    .submittedAt(r.getSubmittedAt());
+
+                    if (visibleFields.contains("username")) b.username(user.getName());
+                    if (visibleFields.contains("role")) b.role(user.getRole());
+
+                    return b.build();
+                })
+                .filter(Objects::nonNull)
+                .toList();
+    }
+
+    /* =====================================================
+       LOW SCORERS (JPA SAFE)
+       ===================================================== */
+
+    public List<LowScoringUserDTO> getLowScoringUsers(int weeks, double thresholdPercent) {
+
+        Instant fromDate =
+                Instant.now().minus(weeks * 7L, ChronoUnit.DAYS);
+
+        return responseRepo.findAll().stream()
+                .filter(r ->
+                        r.getScore() != null &&
+                                r.getMaxScore() != null &&
+                                r.getSubmittedAt().isAfter(fromDate)
+                )
+                .collect(Collectors.groupingBy(ResponseModel::getUserId))
+                .entrySet()
+                .stream()
+                .map(entry -> {
+                    double avg =
+                            entry.getValue().stream()
+                                    .mapToDouble(
+                                            r -> (r.getScore() * 100.0) / r.getMaxScore()
+                                    )
+                                    .average()
+                                    .orElse(0);
+
+                    if (avg >= thresholdPercent) return null;
+
+                    ResponseModel r = entry.getValue().get(0);
+
+                    return LowScoringUserDTO.builder()
+                            .userId(r.getUserId())
+                            .username(r.getUsername())
+                            .avgPercentage(avg)
+                            .attemptCount(entry.getValue().size())
+                            .build();
+                })
+                .filter(Objects::nonNull)
+                .toList();
+    }
+}

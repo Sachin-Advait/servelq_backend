@@ -25,24 +25,8 @@ public class SurveyResponseStatsMapper {
                 .build();
     }
 
-    public SurveyResponseStatsDTO.BreakdownByOutletDTO toOutletBreakdown(String outlet, int responded, int invited, double rate, List<SurveyResponseStatsDTO.BreakdownByRoleDTO> position) {
-        return SurveyResponseStatsDTO.BreakdownByOutletDTO.builder()
-                .outlet(outlet)
-                .responded(responded)
-                .invited(invited)
-                .responseRate(rate)
-                .position(position)
-                .build();
-    }
 
-    public SurveyResponseStatsDTO.BreakdownByRegionDTO toRegionBreakdown(String region, int responded, int invited, double rate, List<SurveyResponseStatsDTO.BreakdownByOutletDTO> outlets) {
-        return SurveyResponseStatsDTO.BreakdownByRegionDTO.builder()
-                .region(region)
-                .responded(responded)
-                .invited(invited)
-                .responseRate(rate)
-                .outlets(outlets)
-                .build();
-    }
+
+
 }
 

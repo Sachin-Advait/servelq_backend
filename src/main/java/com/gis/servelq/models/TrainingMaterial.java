@@ -11,7 +11,7 @@ import java.time.Instant;
         name = "training_materials",
         indexes = {
                 @Index(name = "idx_training_active", columnList = "active"),
-                @Index(name = "idx_training_region_active", columnList = "region, active"),
+                @Index(name = "idx_training_active", columnList = "active"),
                 @Index(name = "idx_training_cloudinary", columnList = "cloudinary_public_id")
         }
 )
@@ -32,9 +32,6 @@ public class TrainingMaterial {
     private String type; // video, document, interactive
 
     private String duration;
-
-    @Column(nullable = false)
-    private String region;
 
     @Column(name = "assigned_to")
     private Integer assignedTo;

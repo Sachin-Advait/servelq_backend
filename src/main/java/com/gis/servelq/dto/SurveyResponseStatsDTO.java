@@ -10,7 +10,6 @@ import java.util.List;
 public class SurveyResponseStatsDTO {
     private OverallStatsDTO overall;
     private String title;
-    private List<BreakdownByRegionDTO> byRegion;
 
     @Builder
     @Data
@@ -20,25 +19,6 @@ public class SurveyResponseStatsDTO {
         private double overallResponseRate;
     }
 
-    @Builder
-    @Data
-    public static class BreakdownByRegionDTO {
-        private String region;
-        private int invited;
-        private int responded;
-        private double responseRate;
-        private List<BreakdownByOutletDTO> outlets;
-    }
-
-    @Builder
-    @Data
-    public static class BreakdownByOutletDTO {
-        private String outlet;
-        private int invited;
-        private int responded;
-        private double responseRate;
-        private List<BreakdownByRoleDTO> position;
-    }
 
     @Builder
     @Data

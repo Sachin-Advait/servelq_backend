@@ -14,7 +14,6 @@ public class TrainingUploadAssignDTO {
     private String title;
     private String type;
     private String duration;
-    private String region;
 
     // Cloudinary
     private String cloudinaryPublicId;

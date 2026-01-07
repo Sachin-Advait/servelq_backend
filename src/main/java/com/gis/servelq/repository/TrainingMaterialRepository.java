@@ -14,7 +14,6 @@ public interface TrainingMaterialRepository
 
     List<TrainingMaterial> findAllByActiveTrue();
 
-    List<TrainingMaterial> findByRegionAndActiveTrue(String region);
 
     Optional<TrainingMaterial> findByIdAndActiveTrue(Long id);
 

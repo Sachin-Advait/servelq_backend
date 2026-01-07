@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/user/training")
+@RequestMapping("/serveiq/api/user/training")
 @RequiredArgsConstructor
 public class TrainingController {
 
@@ -48,16 +48,6 @@ public class TrainingController {
         );
     }
 
-    @GetMapping("/region/{region}")
-    public ResponseEntity<ApiResponseDTO<List<TrainingMaterial>>> getByRegion(@PathVariable String region) {
-        return ResponseEntity.ok(
-                new ApiResponseDTO<>(
-                        true,
-                        "Trainings fetched for region",
-                        trainingService.getMaterialsByRegion(region)
-                )
-        );
-    }
 
     @PostMapping("/assign")
     public ResponseEntity<ApiResponseDTO<Void>> assignTraining(
