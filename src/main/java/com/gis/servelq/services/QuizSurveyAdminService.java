@@ -40,27 +40,57 @@ public class QuizSurveyAdminService {
     /* ---------------- UPDATE ---------------- */
     public QuizSurveyModel update(UUID id, QuizSurveyModel updated) {
 
-        QuizSurveyModel existing =
-                quizSurveyRepo.findById(id)
-                        .orElseThrow(() -> new IllegalArgumentException("Quiz not found"));
+        QuizSurveyModel existing = quizSurveyRepo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Quiz not found"));
 
-        existing.setTitle(updated.getTitle());
-        existing.setType(updated.getType());
-        existing.setDefinitionJson(updated.getDefinitionJson());
-        existing.setAnswerKey(updated.getAnswerKey());
-        existing.setMaxScore(updated.getMaxScore());
-        existing.setQuizDuration(updated.getQuizDuration());
-        existing.setQuizTotalDuration(updated.getQuizTotalDuration());
-        existing.setIsMandatory(updated.getIsMandatory());
-        existing.setMaxRetake(updated.getMaxRetake());
-        existing.setVisibilityType(updated.getVisibilityType());
-        existing.setTargetedUsers(updated.getTargetedUsers());
-        existing.setUserDataDisplayFields(updated.getUserDataDisplayFields());
-        existing.setAnnouncementMode(updated.getAnnouncementMode());
-        existing.setScheduledTime(updated.getScheduledTime());
+        if (updated.getTitle() != null)
+            existing.setTitle(updated.getTitle());
+
+        if (updated.getType() != null)
+            existing.setType(updated.getType());
+
+        if (updated.getDefinitionJson() != null)
+            existing.setDefinitionJson(updated.getDefinitionJson());
+
+        if (updated.getAnswerKey() != null)
+            existing.setAnswerKey(updated.getAnswerKey());
+
+        if (updated.getMaxScore() != null)
+            existing.setMaxScore(updated.getMaxScore());
+
+        if (updated.getQuizDuration() != null)
+            existing.setQuizDuration(updated.getQuizDuration());
+
+        if (updated.getQuizTotalDuration() != null)
+            existing.setQuizTotalDuration(updated.getQuizTotalDuration());
+
+        if (updated.getIsMandatory() != null)
+            existing.setIsMandatory(updated.getIsMandatory());
+
+        if (updated.getMaxRetake() != null)
+            existing.setMaxRetake(updated.getMaxRetake());
+
+        if (updated.getVisibilityType() != null)
+            existing.setVisibilityType(updated.getVisibilityType());
+
+        if (updated.getTargetedUsers() != null)
+            existing.setTargetedUsers(updated.getTargetedUsers());
+
+        if (updated.getUserDataDisplayFields() != null)
+            existing.setUserDataDisplayFields(updated.getUserDataDisplayFields());
+
+        if (updated.getAnnouncementMode() != null)
+            existing.setAnnouncementMode(updated.getAnnouncementMode());
+
+        if (updated.getScheduledTime() != null)
+            existing.setScheduledTime(updated.getScheduledTime());
+
+        if (updated.getStatus() != null)
+            existing.setStatus(updated.getStatus());
 
         return quizSurveyRepo.save(existing);
     }
+
 
     /* ---------------- DELETE ---------------- */
     public void delete(UUID id) {

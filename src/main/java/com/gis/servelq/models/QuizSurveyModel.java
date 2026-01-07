@@ -77,5 +77,6 @@ public class QuizSurveyModel {
     private Instant scheduledTime;
 
     @CreatedDate
+    @Column(nullable = false, updatable = false)
     private Instant createdAt;
 }
