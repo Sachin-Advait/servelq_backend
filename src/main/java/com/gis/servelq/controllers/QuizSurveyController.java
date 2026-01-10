@@ -59,15 +59,9 @@ public class QuizSurveyController {
     }
 
     @GetMapping("/by-user/{userId}")
-    public ResponseEntity<ApiResponseDTO<List<QuizzesSurveysDTO>>> getByTargetUser(
-            @PathVariable String userId
-    ) {
-        return ResponseEntity.ok(
-                new ApiResponseDTO<>(
-                        true,
-                        "Quizzes fetched for user",
-                        quizSurveyService.getQuizzesByTargetUser(userId)
-                )
+    public ResponseEntity<ApiResponseDTO<List<QuizzesSurveysDTO>>> getByTargetUser(@PathVariable String userId) {
+        return ResponseEntity.ok(new ApiResponseDTO<>(true, "Quizzes fetched for user",
+                quizSurveyService.getQuizzesByTargetUser(userId))
         );
     }
 
@@ -77,26 +71,15 @@ public class QuizSurveyController {
             @PathVariable UUID quizSurveyId,
             @RequestBody SurveySubmissionRequest request
     ) {
-        ResponseModel response =
-                responseService.storeResponse(quizSurveyId, request);
-
-        return ResponseEntity.ok(
-                new ApiResponseDTO<>(true, "Response submitted successfully", response)
-        );
+        ResponseModel response = responseService.storeResponse(quizSurveyId, request);
+        return ResponseEntity.ok(new ApiResponseDTO<>(true, "Response submitted successfully", response));
     }
 
     /* ---------------- USER RESPONSES ---------------- */
     @GetMapping("/user/responses/by-user/{userId}")
-    public ResponseEntity<ApiResponseDTO<List<ResponseModel>>> getAllResponsesByUserId(
-            @PathVariable String userId
-    ) {
-        return ResponseEntity.ok(
-                new ApiResponseDTO<>(
-                        true,
-                        "Responses fetched successfully",
-                        responseService.getAllResponsesByUserId(userId)
-                )
-        );
+    public ResponseEntity<ApiResponseDTO<List<ResponseModel>>> getAllResponsesByUserId(@PathVariable String userId) {
+        return ResponseEntity.ok(new ApiResponseDTO<>(true, "Responses fetched successfully",
+                responseService.getAllResponsesByUserId(userId)));
     }
 
     /* ---------------- STAFF INVITED ---------------- */
@@ -104,12 +87,8 @@ public class QuizSurveyController {
     public ResponseEntity<ApiResponseDTO<List<UserResponseDTO>>> totalStaffInvited(
             @PathVariable UUID quizSurveyId
     ) {
-        return ResponseEntity.ok(
-                new ApiResponseDTO<>(
-                        true,
-                        "Staff invited retrieved successfully",
-                        responseService.totalStaffInvited(quizSurveyId)
-                )
+        return ResponseEntity.ok(new ApiResponseDTO<>(true, "Staff invited retrieved successfully",
+                responseService.totalStaffInvited(quizSurveyId))
         );
     }
 
@@ -118,12 +97,8 @@ public class QuizSurveyController {
     public ResponseEntity<ApiResponseDTO<List<ResponseReceivedDTO>>> totalResponseReceived(
             @PathVariable UUID quizSurveyId
     ) {
-        return ResponseEntity.ok(
-                new ApiResponseDTO<>(
-                        true,
-                        "Respondents retrieved successfully",
-                        responseService.totalResponseReceived(quizSurveyId)
-                )
+        return ResponseEntity.ok(new ApiResponseDTO<>(true, "Respondents retrieved successfully",
+                responseService.totalResponseReceived(quizSurveyId))
         );
     }
 
@@ -131,12 +106,9 @@ public class QuizSurveyController {
     @GetMapping("/user/responses/low-scorers")
     public ResponseEntity<ApiResponseDTO<List<LowScoringUserDTO>>> lowScorersLast5Weeks() {
 
-        return ResponseEntity.ok(
-                new ApiResponseDTO<>(
-                        true,
-                        "Low scorers during last 5 weeks retrieved successfully",
-                        responseService.getLowScoringUsers(5, 50)
-                )
+        return ResponseEntity.ok(new ApiResponseDTO<>(true,
+                "Low scorers during last 5 weeks retrieved successfully",
+                responseService.getLowScoringUsers(5, 50))
         );
     }
 

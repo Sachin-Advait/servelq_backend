@@ -1,19 +1,15 @@
 package com.gis.servelq.services;
 
-import com.gis.servelq.controllers.QuizSurveySocketController;
 import com.gis.servelq.dto.PageResponseDTO;
 import com.gis.servelq.dto.QuizScoreSummaryDTO;
 import com.gis.servelq.dto.QuizSurveyDTO;
 import com.gis.servelq.dto.QuizzesSurveysDTO;
 import com.gis.servelq.mapper.QuizSurveyMapper;
-import com.gis.servelq.models.AnnouncementMode;
 import com.gis.servelq.models.QuizSurveyModel;
 import com.gis.servelq.models.ResponseModel;
-import com.gis.servelq.models.VisibilityType;
 import com.gis.servelq.repository.QuizSurveyRepository;
 import com.gis.servelq.repository.ResponseRepo;
 import com.gis.servelq.repository.UserRepository;
-import com.gis.servelq.utils.UserDataFieldConstants;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +17,6 @@ import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -33,7 +28,6 @@ public class QuizSurveyService {
 
     private final QuizSurveyRepository quizSurveyRepo;
     private final UserRepository userRepository;
-    private final QuizSurveySocketController quizSurveySocketController;
     private final QuizSurveyMapper quizSurveyMapper;
     private final ResponseRepo responseRepo;
     private final FCMService fcmService;
@@ -42,10 +36,8 @@ public class QuizSurveyService {
        GET QUIZ / SURVEY BY ID
     ------------------------------------------------- */
     public QuizSurveyDTO getQuizSurvey(UUID id) {
-
-        QuizSurveyModel quiz =
-                quizSurveyRepo.findById(id)
-                        .orElseThrow(() -> new IllegalArgumentException("Quiz or survey not found"));
+        QuizSurveyModel quiz = quizSurveyRepo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Quiz or survey not found"));
 
         return QuizSurveyDTO.builder()
                 .id(quiz.getId())
@@ -67,11 +59,7 @@ public class QuizSurveyService {
     /* -------------------------------------------------
        SPECIFICATION (FILTERS)
     ------------------------------------------------- */
-    private Specification<QuizSurveyModel> buildSpecification(
-            String userId,
-            String status,
-            String type,
-            Instant startDate
+    private Specification<QuizSurveyModel> buildSpecification(String userId, String status, String type, Instant startDate
     ) {
         return (root, query, cb) -> {
 
@@ -85,27 +73,18 @@ public class QuizSurveyService {
 
             // Status filter
             if (status != null && !"All Status".equalsIgnoreCase(status)) {
-                predicates.add(
-                        cb.equal(
-                                root.get("status"),
-                                status.equalsIgnoreCase("Active")));
+                predicates.add(cb.equal(root.get("status"), status.equalsIgnoreCase("Active")));
             }
 
             // Type filter
             if (type != null && !"All Types".equalsIgnoreCase(type)) {
-                predicates.add(
-                        cb.equal(
-                                cb.lower(root.get("type")),
-                                type.toLowerCase()));
+                predicates.add(cb.equal(cb.lower(root.get("type")), type.toLowerCase()));
             }
 
             // Date filter
             if (startDate != null) {
-                predicates.add(
-                        cb.between(
-                                root.get("createdAt"),
-                                startDate,
-                                startDate.plus(1, ChronoUnit.DAYS)));
+                predicates.add(cb.between(root.get("createdAt"), startDate,
+                        startDate.plus(1, ChronoUnit.DAYS)));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));
@@ -125,15 +104,12 @@ public class QuizSurveyService {
     ) {
 
         if (userId != null) {
-            userRepository.findById(userId)
-                    .orElseThrow(() -> new RuntimeException("Invalid username"));
+            userRepository.findById(userId).orElseThrow(() -> new RuntimeException("Invalid username"));
         }
 
-        Specification<QuizSurveyModel> spec =
-                buildSpecification(userId, status, type, startDate);
+        Specification<QuizSurveyModel> spec = buildSpecification(userId, status, type, startDate);
 
-        Page<QuizSurveyModel> page =
-                quizSurveyRepo.findAll(spec, pageable);
+        Page<QuizSurveyModel> page = quizSurveyRepo.findAll(spec, pageable);
 
         // Participation filter (post-fetch)
         if (userId != null && participation != null && !"All".equalsIgnoreCase(participation)) {
@@ -177,17 +153,14 @@ public class QuizSurveyService {
                         ? Sort.Direction.ASC
                         : Sort.Direction.DESC;
 
-        Pageable pageable =
-                PageRequest.of(page, size, Sort.by(direction, "createdAt"));
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, "createdAt"));
 
         Page<QuizSurveyModel> quizzes =
                 findWithFilters(userId, status, type, participation, startDate, pageable);
 
-        Page<QuizzesSurveysDTO> dtoPage =
-                quizzes.map(q ->
-                        userId == null
-                                ? quizSurveyMapper.mapToDtoWithoutUser(q)
-                                : quizSurveyMapper.mapToDtoWithUser(q, userId));
+        Page<QuizzesSurveysDTO> dtoPage = quizzes.map(q ->
+                userId == null ? quizSurveyMapper.mapToDtoWithoutUser(q)
+                        : quizSurveyMapper.mapToDtoWithUser(q, userId));
 
         return new PageResponseDTO<>(dtoPage);
     }
@@ -231,7 +204,7 @@ public class QuizSurveyService {
                                 .thenComparing(
                                         ResponseModel::getFinishTimeMs,
                                         Comparator.nullsLast(Long::compareTo)
-                                )                                .thenComparing(ResponseModel::getSubmittedAt))
+                                ).thenComparing(ResponseModel::getSubmittedAt))
                         .limit(3)
                         .map(r -> {
                             Map<String, Object> map = new HashMap<>();
@@ -255,14 +228,9 @@ public class QuizSurveyService {
     }
 
     public List<QuizzesSurveysDTO> getQuizzesByTargetUser(String userId) {
-
-        userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid user id"));
-
-        return quizSurveyRepo.findByTargetedUser(userId)
-                .stream()
-                .map(q -> quizSurveyMapper.mapToDtoWithUser(q, userId))
-                .toList();
+        userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("Invalid user id"));
+        return quizSurveyRepo.findByTargetedUser(userId).stream()
+                .map(q -> quizSurveyMapper.mapToDtoWithUser(q, userId)).toList();
     }
 
 }

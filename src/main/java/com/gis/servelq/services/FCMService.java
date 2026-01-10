@@ -75,8 +75,6 @@ public class FCMService {
         );
     }
 
-
-
     /* ================= COMMON ================= */
     private boolean isTokenInvalid(User user) {
         return user.getFcmToken() == null || user.getFcmToken().isBlank();

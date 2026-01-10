@@ -1,6 +1,9 @@
 package com.gis.servelq.services;
 
-import com.gis.servelq.dto.*;
+import com.gis.servelq.dto.LowScoringUserDTO;
+import com.gis.servelq.dto.ResponseReceivedDTO;
+import com.gis.servelq.dto.SurveySubmissionRequest;
+import com.gis.servelq.dto.UserResponseDTO;
 import com.gis.servelq.models.QuizSurveyModel;
 import com.gis.servelq.models.ResponseModel;
 import com.gis.servelq.models.User;
@@ -27,7 +30,6 @@ public class ResponseService {
     /* =====================================================
        SUBMIT RESPONSE
        ===================================================== */
-
     public ResponseModel storeResponse(UUID quizSurveyId, SurveySubmissionRequest request) {
 
         User user =
@@ -62,11 +64,7 @@ public class ResponseService {
             quiz.setMaxRetake(quiz.getMaxRetake() - 1);
             quizSurveyRepo.save(quiz);
         }
-        return switch (quiz.getType().toLowerCase()) {
-            case "quiz" -> handleQuizResponse(quiz, request, user);
-            case "survey" -> handleSurveyResponse(quiz, request, user);
-            default -> throw new IllegalArgumentException("Unsupported type");
-        };
+        return handleQuizResponse(quiz, request, user);
     }
 
     /* =====================================================
@@ -111,31 +109,8 @@ public class ResponseService {
     }
 
     /* =====================================================
-       SURVEY RESPONSE
-       ===================================================== */
-
-    private ResponseModel handleSurveyResponse(
-            QuizSurveyModel survey,
-            SurveySubmissionRequest request,
-            User user
-    ) {
-        return responseRepo.save(
-                ResponseModel.builder()
-                        .quizSurveyId(survey.getId())
-                        .userId(user.getId())
-                        .username(user.getName())
-                        .answers(request.getAnswers())
-                        .score(null)
-                        .maxScore(null)
-                        .finishTimeMs(request.getFinishTime())
-                        .build()
-        );
-    }
-
-    /* =====================================================
        USER RESPONSES
        ===================================================== */
-
     public List<ResponseModel> getAllResponsesByUserId(String userId) {
         return responseRepo.findByUserId(userId);
     }
@@ -143,7 +118,6 @@ public class ResponseService {
     /* =====================================================
        STAFF INVITED
        ===================================================== */
-
     public List<UserResponseDTO> totalStaffInvited(UUID quizSurveyId) {
 
         QuizSurveyModel quiz =
@@ -160,7 +134,6 @@ public class ResponseService {
     /* =====================================================
        RESPONSES RECEIVED
        ===================================================== */
-
     public List<ResponseReceivedDTO> totalResponseReceived(UUID quizSurveyId) {
 
         QuizSurveyModel quiz =
@@ -218,36 +191,28 @@ public class ResponseService {
         Instant fromDate =
                 Instant.now().minus(weeks * 7L, ChronoUnit.DAYS);
 
-        return responseRepo.findAll().stream()
-                .filter(r ->
-                        r.getScore() != null &&
-                                r.getMaxScore() != null &&
-                                r.getSubmittedAt().isAfter(fromDate)
+        return responseRepo.findAll().stream().filter(r -> r.getScore() != null &&
+                        r.getMaxScore() != null &&
+                        r.getSubmittedAt().isAfter(fromDate)
                 )
-                .collect(Collectors.groupingBy(ResponseModel::getUserId))
-                .entrySet()
-                .stream()
-                .map(entry -> {
+                .collect(Collectors.groupingBy(ResponseModel::getUserId)).values().stream()
+                .map(responseModels -> {
                     double avg =
-                            entry.getValue().stream()
-                                    .mapToDouble(
-                                            r -> (r.getScore() * 100.0) / r.getMaxScore()
-                                    )
+                            responseModels.stream().mapToDouble(
+                                            r -> (r.getScore() * 100.0) / r.getMaxScore())
                                     .average()
                                     .orElse(0);
 
                     if (avg >= thresholdPercent) return null;
 
-                    ResponseModel r = entry.getValue().get(0);
+                    ResponseModel r = responseModels.get(0);
 
                     return LowScoringUserDTO.builder()
                             .userId(r.getUserId())
                             .username(r.getUsername())
                             .avgPercentage(avg)
-                            .attemptCount(entry.getValue().size())
+                            .attemptCount(responseModels.size())
                             .build();
-                })
-                .filter(Objects::nonNull)
-                .toList();
+                }).filter(Objects::nonNull).toList();
     }
 }
