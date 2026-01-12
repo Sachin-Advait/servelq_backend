@@ -1,5 +1,6 @@
 package com.gis.servelq.controllers;
 
+import com.gis.servelq.dto.UpdateFCMTokenRequest;
 import com.gis.servelq.dto.UserResponseDTO;
 import com.gis.servelq.models.User;
 import com.gis.servelq.models.UserRole;
@@ -44,6 +45,12 @@ public class UserController {
     public ResponseEntity<String> deleteUser(@PathVariable String id) {
         userService.deleteUser(id);
         return ResponseEntity.ok("User deleted successfully");
+    }
+
+    @PatchMapping("/update-fcm-token/{id}")
+    public ResponseEntity<UserResponseDTO> updateFcmToken(@RequestBody UpdateFCMTokenRequest req) {
+        User updatedUser = userService.updateFcmToken(req.getUserId(), req.getFcmToken());
+        return ResponseEntity.ok(new UserResponseDTO(updatedUser));
     }
 
     @GetMapping("/role/{role}")

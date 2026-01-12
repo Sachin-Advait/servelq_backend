@@ -30,6 +30,7 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user.setRole(dto.getRole());
         user.setBranchId(dto.getBranchId());
+        user.setFcmToken(dto.getFcmToken());
         user.setCounterId(dto.getCounterId());
         if (user.getRole() == UserRole.KIOSK)
             user.setCategory(dto.getCategory() == null ? KioskCategory.GENERAL : dto.getCategory());
@@ -64,6 +65,13 @@ public class UserService {
             if (userDetails.getCounterId() != null) user.setCounterId(userDetails.getCounterId());
             if (userDetails.getCategory() != null) user.setCategory(userDetails.getCategory());
 
+            return userRepository.save(user);
+        }).orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
+    public User updateFcmToken(String id, String fcmToken) {
+        return userRepository.findById(id).map(user -> {
+            user.setFcmToken(fcmToken);
             return userRepository.save(user);
         }).orElseThrow(() -> new RuntimeException("User not found"));
     }

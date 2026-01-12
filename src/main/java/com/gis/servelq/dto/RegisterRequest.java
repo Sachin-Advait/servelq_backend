@@ -11,6 +11,7 @@ import lombok.Data;
 @Builder
 @Data
 public class RegisterRequest {
+    public String fcmToken = null;
     @NotBlank
     private String email;
     @NotBlank
@@ -22,6 +23,5 @@ public class RegisterRequest {
     private KioskCategory category;
     private String branchId;
     private String counterId;
-    public String fcmToken;
 }
 

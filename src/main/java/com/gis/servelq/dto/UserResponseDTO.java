@@ -3,7 +3,6 @@ package com.gis.servelq.dto;
 import com.gis.servelq.models.KioskCategory;
 import com.gis.servelq.models.User;
 import com.gis.servelq.models.UserRole;
-import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -18,6 +17,7 @@ public class UserResponseDTO {
     private KioskCategory category;
     private String branchId;
     private String counterId;
+    private String fcmToken;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -29,6 +29,7 @@ public class UserResponseDTO {
         this.branchId = user.getBranchId();
         if (user.getCounterId() != null) this.counterId = user.getCounterId();
         if (user.getCategory() != null) this.category = user.getCategory();
+        this.fcmToken = user.getFcmToken();
         this.createdAt = user.getCreatedAt();
         this.updatedAt = user.getUpdatedAt();
     }

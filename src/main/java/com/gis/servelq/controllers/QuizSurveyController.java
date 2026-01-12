@@ -22,8 +22,7 @@ public class QuizSurveyController {
     private final ResponseService responseService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponseDTO<QuizSurveyDTO>> getQuizSurvey(@PathVariable
-                                                                       UUID id) {
+    public ResponseEntity<ApiResponseDTO<QuizSurveyDTO>> getQuizSurvey(@PathVariable UUID id) {
         QuizSurveyDTO quizSurvey = quizSurveyService.getQuizSurvey(id);
         if (quizSurvey == null) {
             return ResponseEntity.status(404).body(

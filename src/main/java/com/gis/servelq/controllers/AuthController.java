@@ -4,6 +4,8 @@ import com.gis.servelq.dto.LoginRequest;
 import com.gis.servelq.dto.RegisterRequest;
 import com.gis.servelq.dto.UserResponseDTO;
 import com.gis.servelq.models.User;
+import com.gis.servelq.models.UserRole;
+import com.gis.servelq.repository.UserRepository;
 import com.gis.servelq.services.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,6 +21,7 @@ public class AuthController {
 
     private final PasswordEncoder passwordEncoder;
     private UserService userService;
+    private UserRepository userRepository;
 
     @PostMapping("/register")
     public UserResponseDTO register(@RequestBody RegisterRequest dto) {
@@ -30,11 +33,14 @@ public class AuthController {
     public UserResponseDTO login(@RequestBody LoginRequest dto) {
         User user = userService.findByEmail(dto.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
-
         if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
             throw new RuntimeException("Invalid password");
         }
 
+        if (dto.getFcmToken() != null && user.getRole() != UserRole.ADMIN) {
+            user.setFcmToken(dto.getFcmToken());
+            userRepository.save(user);
+        }
         return new UserResponseDTO(user);
     }
 }

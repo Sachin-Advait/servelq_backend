@@ -4,21 +4,18 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-
 import java.time.LocalDateTime;
-@NoArgsConstructor          // ✅ THIS IS REQUIRED
+
+@NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name = "users")
 @Data
-@Builder
-
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -45,6 +42,9 @@ public class User {
     @Column(name = "counter_id")
     private String counterId;
 
+    @Column(name = "fcm_token")
+    private String fcmToken = null;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -52,7 +52,5 @@ public class User {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
-    @Builder.Default private String fcmToken = null;
 }
 
