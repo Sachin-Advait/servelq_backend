@@ -1,7 +1,6 @@
 package com.gis.servelq.dto;
 
 
-import com.gis.servelq.models.KioskCategory;
 import com.gis.servelq.models.UserRole;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -20,7 +19,6 @@ public class RegisterRequest {
     private String name;
     @NotNull
     private UserRole role = UserRole.USER;
-    private KioskCategory category;
     private String branchId;
     private String counterId;
 }
