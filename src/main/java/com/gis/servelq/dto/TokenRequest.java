@@ -12,5 +12,7 @@ public class TokenRequest {
     private String branchId;
     @NotNull
     private String mobileNumber;
+    @NotNull
+    private Boolean greenToken;
     private Integer priority = 50;
 }

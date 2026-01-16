@@ -23,9 +23,10 @@ public class TokenService {
     private final TokenRepository tokenRepository;
     private final ServiceRepository serviceRepository;
     private final BranchRepository branchRepository;
-    private final SocketService socketService;
+    private final WhatsAppService whatsAppService;
     private final AgentService agentService;
     private final CategoryService categoryService;
+    private final SocketService socketService;
 
     @Transactional
     public TokenResponseDTO generateToken(TokenRequest request) {
@@ -53,8 +54,8 @@ public class TokenService {
         return tokenRepository.findById(tokenId).orElseThrow(() -> new RuntimeException("Token not found"));
     }
 
+    @Transactional
     private TokenResponseDTO createTokenOnce(TokenRequest request) {
-
         Services service = serviceRepository.findById(request.getServiceId())
                 .orElseThrow(() -> new RuntimeException("Service not found"));
 
@@ -78,14 +79,25 @@ public class TokenService {
 
         Token savedToken = tokenRepository.saveAndFlush(token);
 
+        if (request.getGreenToken() == true) {
+            sendWhatsAppNotification(request.getMobileNumber(), savedToken.getToken());
+        }
         if (service.getCounterIds() != null) {
             for (String counterId : service.getCounterIds()) {
                 agentService.notifyBothAgentAndDisplay(counterId);
             }
         }
-
         socketService.tvSocket(branch.getId());
         return TokenResponseDTO.fromEntity(savedToken);
+    }
+
+    private void sendWhatsAppNotification(String mobileNumber, String tokenNumber) {
+        String phoneNumber = "+968" + mobileNumber;
+        String message = String.format(
+                "Your token number %s has been generated successfully.%nPlease monitor the TV display for your turn.",
+                tokenNumber
+        );
+        whatsAppService.sendMessage(phoneNumber, message);
     }
 
     private TokenNumber generateToken(Branch branch, String serviceCode, Integer requestPriority) {
